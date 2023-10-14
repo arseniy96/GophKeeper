@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package gophkeeper;
+
+option go_package = "src/grpc/gophkeeper";
+
+service GophKeeper {
+  rpc Ping(PingRequest) returns(PingResponse);
+}
+
+// PingRequest - запрос на ping (empty)
+message PingRequest{}
+// PingResponse - ответ на ping
+message PingResponse{
+  string result = 1;
+}
