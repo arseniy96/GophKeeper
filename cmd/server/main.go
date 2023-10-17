@@ -10,7 +10,10 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/arseniy96/GophKeeper/internal/handlers"
+	"github.com/arseniy96/GophKeeper/internal/server/config"
+	"github.com/arseniy96/GophKeeper/internal/server/handlers"
+	"github.com/arseniy96/GophKeeper/internal/server/logger"
+	"github.com/arseniy96/GophKeeper/internal/server/storage"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
@@ -21,9 +24,23 @@ func main() {
 }
 
 func run() error {
-	serverGRPC := handlers.NewServer(nil)
+	err := config.Initialize()
+	if err != nil {
+		return err
+	}
+	err = logger.Initialize(config.Settings.LogLevel)
+	if err != nil {
+		return err
+	}
 
-	listen, err := net.Listen("tcp", ":3200")
+	rep, err := storage.NewStorage(config.Settings.DatabaseDSN)
+	if err != nil {
+		logger.Log.Errorf("database error: %v", err)
+	}
+
+	serverGRPC := handlers.NewServer(rep)
+
+	listen, err := net.Listen("tcp", config.Settings.Host)
 	if err != nil {
 		return err
 	}

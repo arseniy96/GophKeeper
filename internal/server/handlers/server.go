@@ -5,6 +5,7 @@ import (
 )
 
 type Repository interface {
+	HealthCheck() error
 }
 
 type Server struct {
