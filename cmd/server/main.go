@@ -8,6 +8,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
 
 	"github.com/arseniy96/GophKeeper/internal/server/config"
@@ -50,7 +51,12 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	gRPCServer := grpc.NewServer(grpc.UnaryInterceptor(interceptors.AuthInterceptor(rep)))
+
+	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
+		interceptors.AuthInterceptor(rep),
+		logging.UnaryServerInterceptor(interceptors.LoggerInterceptor()),
+	))
+
 	pb.RegisterGophKeeperServer(gRPCServer, serverGRPC)
 
 	ctx, cancelCtx := signal.NotifyContext(context.Background(), syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
