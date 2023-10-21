@@ -12,6 +12,7 @@ import (
 
 	"github.com/arseniy96/GophKeeper/internal/server/config"
 	"github.com/arseniy96/GophKeeper/internal/server/handlers"
+	"github.com/arseniy96/GophKeeper/internal/server/interceptors"
 	"github.com/arseniy96/GophKeeper/internal/server/logger"
 	"github.com/arseniy96/GophKeeper/internal/server/storage"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
@@ -37,6 +38,11 @@ func run() error {
 	if err != nil {
 		logger.Log.Errorf("database error: %v", err)
 	}
+	defer func() {
+		if err = rep.Close(); err != nil {
+			logger.Log.Errorf("database close error: %v", err)
+		}
+	}()
 
 	serverGRPC := handlers.NewServer(rep)
 
@@ -44,7 +50,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	gRPCServer := grpc.NewServer()
+	gRPCServer := grpc.NewServer(grpc.UnaryInterceptor(interceptors.AuthInterceptor(rep)))
 	pb.RegisterGophKeeperServer(gRPCServer, serverGRPC)
 
 	ctx, cancelCtx := signal.NotifyContext(context.Background(), syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
