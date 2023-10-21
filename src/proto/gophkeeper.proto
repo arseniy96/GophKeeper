@@ -6,6 +6,8 @@ option go_package = "src/grpc/gophkeeper";
 
 service GophKeeper {
   rpc Ping(PingRequest) returns(PingResponse);
+  rpc SignUp(SignUpRequest) returns(SignUpResponse);
+  rpc SignIn(SignInRequest) returns(SignInResponse);
 }
 
 // PingRequest - запрос на ping (empty)
@@ -13,4 +15,26 @@ message PingRequest{}
 // PingResponse - ответ на ping
 message PingResponse{
   string result = 1;
+}
+
+// SignUPRequest – запрос на регистрацию пользователя
+message SignUpRequest{
+  string login = 1;
+  string password = 2;
+}
+// SignUPResponse – ответ на регистрацию пользователя
+message SignUpResponse{
+  // token – AuthToken для доступа к ресурсам
+  string token = 1;
+}
+
+// SignUPRequest – запрос на вход пользователя
+message SignInRequest{
+  string login = 1;
+  string password = 2;
+}
+// SignUPResponse – ответ на вход пользователя
+message SignInResponse{
+  // token – AuthToken для доступа к ресурсам
+  string token = 1;
 }

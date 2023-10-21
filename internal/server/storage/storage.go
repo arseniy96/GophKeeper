@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -9,6 +10,8 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 
@@ -18,6 +21,9 @@ import (
 const (
 	TimeOut = 3 * time.Second
 )
+
+var ErrConflict = errors.New(`already exists`)
+var ErrNowRows = errors.New(`missing data`)
 
 type Database struct {
 	DB *sqlx.DB
@@ -59,4 +65,58 @@ func (db *Database) HealthCheck() error {
 	defer cancel()
 
 	return db.DB.PingContext(ctx)
+}
+
+func (db *Database) Close() error {
+	return db.DB.Close()
+}
+
+func (db *Database) CreateUser(ctx context.Context, login, password string) error {
+	var pgErr *pgconn.PgError
+
+	_, err := db.DB.ExecContext(ctx,
+		`INSERT INTO users(login, password) VALUES($1, $2)`,
+		login, password)
+	if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
+		return ErrConflict
+	}
+
+	return err
+}
+
+func (db *Database) UpdateUserToken(ctx context.Context, login, token string) error {
+	_, err := db.DB.ExecContext(ctx,
+		`UPDATE users SET token=$1 WHERE login=$2`,
+		token, login)
+	return err
+}
+
+func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, error) {
+	var u User
+	err := db.DB.QueryRowContext(ctx,
+		`SELECT id, login, password, token FROM users WHERE login=$1 LIMIT(1)`,
+		login).Scan(&u.ID, &u.Login, &u.Password, &u.Token)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNowRows
+		}
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (db *Database) FindUserByToken(ctx context.Context, token string) (*User, error) {
+	var u User
+	err := db.DB.QueryRowContext(ctx,
+		`SELECT id, login, password, token FROM users WHERE token=$1 LIMIT(1)`,
+		token).Scan(&u.ID, &u.Login, &u.Password, &u.Token)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNowRows
+		}
+		return nil, err
+	}
+
+	return &u, nil
 }
