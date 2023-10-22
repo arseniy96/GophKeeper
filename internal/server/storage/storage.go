@@ -121,7 +121,7 @@ func (db *Database) FindUserByToken(ctx context.Context, token string) (*User, e
 	return &u, nil
 }
 
-func (db *Database) SaveUserData(ctx context.Context, userID int, name, dataType string, data []byte) error {
+func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataType string, data []byte) error {
 	var pgErr *pgconn.PgError
 
 	_, err := db.DB.ExecContext(ctx,
@@ -133,4 +133,46 @@ func (db *Database) SaveUserData(ctx context.Context, userID int, name, dataType
 	}
 
 	return err
+}
+
+func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecord, error) {
+	rows, err := db.DB.QueryContext(ctx,
+		`SELECT id, name, data_type, version, created_at from user_records where user_id=$1`,
+		userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var records []ShortRecord
+	for rows.Next() {
+		var rec ShortRecord
+		err = rows.Scan(&rec.ID, &rec.Name, &rec.DataType, &rec.Version, &rec.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, rec)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return records, nil
+}
+
+func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Record, error) {
+	var rec Record
+	err := db.DB.QueryRowContext(ctx,
+		`SELECT id, name, data, data_type, version, created_at FROM user_records where id=$1 AND user_id=$2`,
+		id, userID).Scan(&rec.ID, &rec.Name, &rec.Data, &rec.DataType, &rec.Version, &rec.CreatedAt)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNowRows
+		}
+		return nil, err
+	}
+
+	return &rec, nil
 }

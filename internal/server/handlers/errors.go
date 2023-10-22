@@ -7,4 +7,5 @@ const (
 	UserUnauthorizedTxt   = "UserUnauthorized"
 	MissingTokenTxt       = "MissingToken"
 	InvalidTokenTxt       = "InvalidToken"
+	DataNotFound          = "DataNotFound"
 )

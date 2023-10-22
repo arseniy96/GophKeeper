@@ -13,7 +13,9 @@ type Repository interface {
 	UpdateUserToken(ctx context.Context, login, token string) error
 	FindUserByLogin(ctx context.Context, login string) (*storage.User, error)
 	FindUserByToken(ctx context.Context, token string) (*storage.User, error)
-	SaveUserData(ctx context.Context, userID int, name, dataType string, data []byte) error
+	SaveUserData(ctx context.Context, userID int64, name, dataType string, data []byte) error
+	GetUserData(ctx context.Context, userID int64) ([]storage.ShortRecord, error)
+	FindUserRecord(ctx context.Context, id, userID int64) (*storage.Record, error)
 }
 
 type Server struct {

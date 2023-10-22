@@ -9,6 +9,8 @@ service GophKeeper {
   rpc SignUp(SignUpRequest) returns(SignUpResponse);
   rpc SignIn(SignInRequest) returns(SignInResponse);
   rpc SaveData(SaveDataRequest) returns(SaveDataResponse);
+  rpc GetUserDataList(UserDataListRequest) returns(UserDataListResponse);
+  rpc GetUserData(UserDataRequest) returns(UserDataResponse);
 }
 
 // PingRequest - запрос на ping (empty)
@@ -49,4 +51,33 @@ message SaveDataRequest{
 // SaveDataResponse – результат сохранения
 message SaveDataResponse{
   string result = 1;
+}
+
+// GetUserDataRequest – запрос на получение списка данных по конкретному пользователю
+message UserDataListRequest{}
+// GetUserDataListResponse – список сохранённых данных пользователя
+message UserDataListResponse{
+  repeated UserDataNested data = 1;
+}
+// UserDataNested – метаданные (без поля data)
+message UserDataNested{
+  int64 id = 1;
+  string name = 2;
+  string data_type = 3;
+  int64 version = 4;
+  string create_at = 5;
+}
+
+// UserDataRequest – запрос на получение конкретных данных пользователя
+message UserDataRequest{
+  int64 id = 1;
+}
+// UserDataResponse – данные пользователя по id
+message UserDataResponse{
+  int64 id = 1;
+  string name = 2;
+  bytes data = 3;
+  string data_type = 4;
+  int64 version = 5;
+  string create_at = 6;
 }
