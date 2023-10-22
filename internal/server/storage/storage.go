@@ -72,28 +72,52 @@ func (db *Database) Close() error {
 }
 
 func (db *Database) CreateUser(ctx context.Context, login, password string) error {
-	var pgErr *pgconn.PgError
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 
-	_, err := db.DB.ExecContext(ctx,
+	var pgErr *pgconn.PgError
+	_, err = tx.ExecContext(ctx,
 		`INSERT INTO users(login, password) VALUES($1, $2)`,
 		login, password)
-	if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
-		return ErrConflict
+	if err != nil {
+		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
+			return ErrConflict
+		}
+		return err
 	}
 
-	return err
+	return tx.Commit()
 }
 
 func (db *Database) UpdateUserToken(ctx context.Context, login, token string) error {
-	_, err := db.DB.ExecContext(ctx,
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(ctx,
 		`UPDATE users SET token=$1 WHERE login=$2`,
 		token, login)
-	return err
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, error) {
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
 	var u User
-	err := db.DB.QueryRowContext(ctx,
+	err = tx.QueryRowContext(ctx,
 		`SELECT id, login, password, token FROM users WHERE login=$1 LIMIT(1)`,
 		login).Scan(&u.ID, &u.Login, &u.Password, &u.Token)
 	if err != nil {
@@ -102,13 +126,23 @@ func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, e
 		}
 		return nil, err
 	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
 
 	return &u, nil
 }
 
 func (db *Database) FindUserByToken(ctx context.Context, token string) (*User, error) {
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
 	var u User
-	err := db.DB.QueryRowContext(ctx,
+	err = tx.QueryRowContext(ctx,
 		`SELECT id, login, password, token FROM users WHERE token=$1 LIMIT(1)`,
 		token).Scan(&u.ID, &u.Login, &u.Password, &u.Token)
 	if err != nil {
@@ -117,26 +151,45 @@ func (db *Database) FindUserByToken(ctx context.Context, token string) (*User, e
 		}
 		return nil, err
 	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
 
 	return &u, nil
 }
 
 func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataType string, data []byte) error {
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
 	var pgErr *pgconn.PgError
 
-	_, err := db.DB.ExecContext(ctx,
+	_, err = tx.ExecContext(ctx,
 		`INSERT INTO user_records(name, data, data_type, user_id) VALUES($1, $2, $3, $4)`,
 		name, data, dataType, userID)
 
-	if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
-		return ErrConflict
+	if err != nil {
+		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
+			return ErrConflict
+		}
+		return err
 	}
 
-	return err
+	return tx.Commit()
 }
 
 func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecord, error) {
-	rows, err := db.DB.QueryContext(ctx,
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	rows, err := tx.QueryContext(ctx,
 		`SELECT id, name, data_type, version, created_at from user_records where user_id=$1`,
 		userID)
 	if err != nil {
@@ -158,12 +211,23 @@ func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecor
 		return nil, err
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
 	return records, nil
 }
 
 func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Record, error) {
+	tx, err := db.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
 	var rec Record
-	err := db.DB.QueryRowContext(ctx,
+	err = tx.QueryRowContext(ctx,
 		`SELECT id, name, data, data_type, version, created_at FROM user_records where id=$1 AND user_id=$2`,
 		id, userID).Scan(&rec.ID, &rec.Name, &rec.Data, &rec.DataType, &rec.Version, &rec.CreatedAt)
 
@@ -171,6 +235,10 @@ func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Reco
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNowRows
 		}
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
 		return nil, err
 	}
 
