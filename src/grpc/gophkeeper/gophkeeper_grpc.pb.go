@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GophKeeper_Ping_FullMethodName   = "/gophkeeper.GophKeeper/Ping"
-	GophKeeper_SignUp_FullMethodName = "/gophkeeper.GophKeeper/SignUp"
-	GophKeeper_SignIn_FullMethodName = "/gophkeeper.GophKeeper/SignIn"
+	GophKeeper_Ping_FullMethodName     = "/gophkeeper.GophKeeper/Ping"
+	GophKeeper_SignUp_FullMethodName   = "/gophkeeper.GophKeeper/SignUp"
+	GophKeeper_SignIn_FullMethodName   = "/gophkeeper.GophKeeper/SignIn"
+	GophKeeper_SaveData_FullMethodName = "/gophkeeper.GophKeeper/SaveData"
 )
 
 // GophKeeperClient is the client API for GophKeeper service.
@@ -31,6 +32,7 @@ type GophKeeperClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	SignUp(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*SignUpResponse, error)
 	SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error)
+	SaveData(ctx context.Context, in *SaveDataRequest, opts ...grpc.CallOption) (*SaveDataResponse, error)
 }
 
 type gophKeeperClient struct {
@@ -68,6 +70,15 @@ func (c *gophKeeperClient) SignIn(ctx context.Context, in *SignInRequest, opts .
 	return out, nil
 }
 
+func (c *gophKeeperClient) SaveData(ctx context.Context, in *SaveDataRequest, opts ...grpc.CallOption) (*SaveDataResponse, error) {
+	out := new(SaveDataResponse)
+	err := c.cc.Invoke(ctx, GophKeeper_SaveData_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GophKeeperServer is the server API for GophKeeper service.
 // All implementations must embed UnimplementedGophKeeperServer
 // for forward compatibility
@@ -75,6 +86,7 @@ type GophKeeperServer interface {
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	SignUp(context.Context, *SignUpRequest) (*SignUpResponse, error)
 	SignIn(context.Context, *SignInRequest) (*SignInResponse, error)
+	SaveData(context.Context, *SaveDataRequest) (*SaveDataResponse, error)
 	mustEmbedUnimplementedGophKeeperServer()
 }
 
@@ -90,6 +102,9 @@ func (UnimplementedGophKeeperServer) SignUp(context.Context, *SignUpRequest) (*S
 }
 func (UnimplementedGophKeeperServer) SignIn(context.Context, *SignInRequest) (*SignInResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignIn not implemented")
+}
+func (UnimplementedGophKeeperServer) SaveData(context.Context, *SaveDataRequest) (*SaveDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveData not implemented")
 }
 func (UnimplementedGophKeeperServer) mustEmbedUnimplementedGophKeeperServer() {}
 
@@ -158,6 +173,24 @@ func _GophKeeper_SignIn_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GophKeeper_SaveData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GophKeeperServer).SaveData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GophKeeper_SaveData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GophKeeperServer).SaveData(ctx, req.(*SaveDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GophKeeper_ServiceDesc is the grpc.ServiceDesc for GophKeeper service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +209,10 @@ var GophKeeper_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SignIn",
 			Handler:    _GophKeeper_SignIn_Handler,
+		},
+		{
+			MethodName: "SaveData",
+			Handler:    _GophKeeper_SaveData_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

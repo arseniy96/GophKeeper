@@ -120,3 +120,17 @@ func (db *Database) FindUserByToken(ctx context.Context, token string) (*User, e
 
 	return &u, nil
 }
+
+func (db *Database) SaveUserData(ctx context.Context, userID int, name, dataType string, data []byte) error {
+	var pgErr *pgconn.PgError
+
+	_, err := db.DB.ExecContext(ctx,
+		`INSERT INTO user_records(name, data, data_type, user_id) VALUES($1, $2, $3, $4)`,
+		name, data, dataType, userID)
+
+	if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
+		return ErrConflict
+	}
+
+	return err
+}

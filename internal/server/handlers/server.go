@@ -9,10 +9,11 @@ import (
 
 type Repository interface {
 	HealthCheck() error
-	CreateUser(context.Context, string, string) error
-	UpdateUserToken(context.Context, string, string) error
-	FindUserByLogin(context.Context, string) (*storage.User, error)
-	FindUserByToken(context.Context, string) (*storage.User, error)
+	CreateUser(ctx context.Context, login, password string) error
+	UpdateUserToken(ctx context.Context, login, token string) error
+	FindUserByLogin(ctx context.Context, login string) (*storage.User, error)
+	FindUserByToken(ctx context.Context, token string) (*storage.User, error)
+	SaveUserData(ctx context.Context, userID int, name, dataType string, data []byte) error
 }
 
 type Server struct {

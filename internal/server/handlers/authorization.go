@@ -39,12 +39,6 @@ func (s *Server) SignUp(ctx context.Context, in *pb.SignUpRequest) (*pb.SignUpRe
 }
 
 func (s *Server) SignIn(ctx context.Context, in *pb.SignInRequest) (*pb.SignInResponse, error) {
-	// достаём данные из запроса
-	// хэшируем пароль пользователя
-	// ищем пользователя по login
-	// сверяем с хэшированным паролем пароль из БД
-	// если всё ок, создаём токен и отдаём пользователю
-	// токен сохраняем в БД
 	login := in.Login
 	pass := in.Password
 	user, err := s.Storage.FindUserByLogin(ctx, login)

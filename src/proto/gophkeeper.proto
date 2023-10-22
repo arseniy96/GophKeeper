@@ -8,6 +8,7 @@ service GophKeeper {
   rpc Ping(PingRequest) returns(PingResponse);
   rpc SignUp(SignUpRequest) returns(SignUpResponse);
   rpc SignIn(SignInRequest) returns(SignInResponse);
+  rpc SaveData(SaveDataRequest) returns(SaveDataResponse);
 }
 
 // PingRequest - запрос на ping (empty)
@@ -37,4 +38,15 @@ message SignInRequest{
 message SignInResponse{
   // token – AuthToken для доступа к ресурсам
   string token = 1;
+}
+
+// SaveDataRequest – запрос на сохранение бинарных данный
+message SaveDataRequest{
+  string name = 1;
+  bytes data = 2;
+  string data_type = 3;
+}
+// SaveDataResponse – результат сохранения
+message SaveDataResponse{
+  string result = 1;
 }
