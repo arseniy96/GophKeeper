@@ -2,16 +2,15 @@ package application
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"google.golang.org/grpc/metadata"
 
-	"github.com/arseniy96/GophKeeper/internal/client/utils"
+	"github.com/arseniy96/GophKeeper/internal/client/models"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
-func (c *Client) GetUserDataList() error {
+func (c *Client) GetUserDataList() ([]models.UserDataList, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	ctx = metadata.AppendToOutgoingContext(ctx, "token", c.AuthToken)
@@ -19,13 +18,19 @@ func (c *Client) GetUserDataList() error {
 	req := &pb.UserDataListRequest{}
 	res, err := c.ClientGRPC.GetUserDataList(ctx, req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	utils.SlowPrint("You have these saved data:")
+	var records []models.UserDataList
 	for _, el := range res.Data {
-		fmt.Printf("id: %v, name: %v, type: %v, version: %v\n", el.Id, el.Name, el.DataType, el.Version)
+		rec := models.UserDataList{
+			ID:       el.Id,
+			Name:     el.Name,
+			DataType: el.DataType,
+			Version:  el.Version,
+		}
+		records = append(records, rec)
 	}
 
-	return nil
+	return records, nil
 }

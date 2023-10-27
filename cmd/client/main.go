@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/arseniy96/GophKeeper/internal/client/application"
+	"github.com/arseniy96/GophKeeper/internal/client/commands"
 	"github.com/arseniy96/GophKeeper/internal/client/utils"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
@@ -31,7 +32,7 @@ func main() {
 func run(client *application.Client) error {
 	utils.SlowPrint("Hello! I'm GophKeeper. I can save your private information.")
 
-	token, err := client.UserAuth()
+	token, err := commands.UserAuth(client)
 	if err != nil {
 		return err
 	}
@@ -63,21 +64,25 @@ func startSession(client *application.Client) error {
 
 		switch commandNumber {
 		case 1:
-			err := client.GetUserDataList()
+			err := commands.GetUserDataList(client)
 			if err != nil {
 				return err
 			}
 		case 2:
-			err := client.GetUserData()
+			err := commands.GetUserData(client)
 			if err != nil {
 				return err
 			}
 		case 3:
-			err := client.SaveData()
+			err := commands.SaveData(client)
 			if err != nil {
 				return err
 			}
 		}
-		fmt.Printf("\n\n====================\n\n")
+		fmt.Printf("\n====================\n\n")
+
+		//p := tea.NewProgram(ui.InitialUIModel(client))
+		//_, err := p.Run()
+		//return err
 	}
 }
