@@ -78,6 +78,8 @@ func startSession(client *application.Client) error {
 			if err != nil {
 				return err
 			}
+		default:
+			fmt.Println("Unknown command")
 		}
 		fmt.Printf("\n====================\n\n")
 

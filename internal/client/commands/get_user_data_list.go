@@ -7,6 +7,7 @@ import (
 )
 
 func GetUserDataList(c Client) error {
+	// TODO: добавить обработку пустого массива
 	records, err := c.GetUserDataList()
 	if err != nil {
 		return nil

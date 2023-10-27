@@ -17,7 +17,7 @@ func SaveData(c Client) error {
 	)
 	utils.SlowPrint("What data type do you want to save?")
 	for i, dt := range DataTypes {
-		fmt.Printf("%v. %v\n", i, dt)
+		fmt.Printf("%v. %v\n", i+1, dt)
 	}
 	_, err := fmt.Scanln(&dti)
 	if err != nil {

@@ -13,17 +13,16 @@ type Config struct {
 	LogLevel    string `json:"log_level" env:"LOG_LEVEL"`
 }
 
-var Settings = &Config{}
-
-func Initialize() error {
+func Initialize() (*Config, error) {
 	configFile, err := os.Open("./config/server/settings/production.json")
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = json.NewDecoder(configFile).Decode(Settings)
+	var c = &Config{}
+	err = json.NewDecoder(configFile).Decode(c)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = env.Parse(Settings)
-	return err
+	err = env.Parse(c)
+	return c, err
 }

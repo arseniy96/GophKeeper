@@ -29,7 +29,7 @@ type Database struct {
 	DB *sqlx.DB
 }
 
-func NewStorage(dsn string) (*Database, error) {
+func NewStorage(dsn string, l *logger.Logger) (*Database, error) {
 	if err := runMigrations(dsn); err != nil {
 		return nil, fmt.Errorf("migrations failed with error: %w", err)
 	}
@@ -40,7 +40,7 @@ func NewStorage(dsn string) (*Database, error) {
 	database := &Database{
 		DB: db,
 	}
-	logger.Log.Info("Database connection was created")
+	l.Log.Info("Database connection was created")
 
 	return database, nil
 }

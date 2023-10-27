@@ -1,5 +1,0 @@
-BEGIN TRANSACTION;
-    DROP TABLE IF EXISTS user_records;
-
-    DROP INDEX IF EXISTS user_id_name_idx;
-COMMIT;
