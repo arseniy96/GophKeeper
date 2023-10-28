@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	NoDataErr         = errors.New("user has no data ")
-	UserNotAuthorized = errors.New("user not authorized")
-	UnknownDataType   = errors.New("unknown data type")
+	ErrNoData            = errors.New("user has no data ")
+	ErrUserNotAuthorized = errors.New("user not authorized")
+	ErrUnknownDataType   = errors.New("unknown data type")
 )

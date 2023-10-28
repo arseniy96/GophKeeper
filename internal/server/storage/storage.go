@@ -79,7 +79,9 @@ func (db *Database) CreateUser(ctx context.Context, login, password string) erro
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	var pgErr *pgconn.PgError
 	_, err = tx.Exec(ctx,
@@ -100,7 +102,9 @@ func (db *Database) UpdateUserToken(ctx context.Context, login, token string) er
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	_, err = tx.Exec(ctx,
 		`UPDATE users SET token=$1 WHERE login=$2`,
@@ -117,7 +121,9 @@ func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, e
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	var u User
 	err = tx.QueryRow(ctx,
@@ -142,7 +148,9 @@ func (db *Database) FindUserByToken(ctx context.Context, token string) (*User, e
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	var u User
 	err = tx.QueryRow(ctx,
@@ -167,7 +175,9 @@ func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataTy
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	var pgErr *pgconn.PgError
 
@@ -190,7 +200,9 @@ func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecor
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	rows, err := tx.Query(ctx,
 		`SELECT id, name, data_type, version from user_records where user_id=$1`,
@@ -227,7 +239,9 @@ func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Reco
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	var rec Record
 	err = tx.QueryRow(ctx,

@@ -12,7 +12,7 @@ func GetUserDataList(c Client) error {
 		return err
 	}
 	if len(records) == 0 {
-		return NoDataErr
+		return ErrNoData
 	}
 
 	utils.SlowPrint("You have these saved data:")

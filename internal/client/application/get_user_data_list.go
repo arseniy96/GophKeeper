@@ -18,7 +18,7 @@ func (c *Client) GetUserDataList() ([]models.UserDataList, error) {
 		return nil, err
 	}
 
-	var records []models.UserDataList
+	records := make([]models.UserDataList, 0, len(res.Data))
 	for _, el := range res.Data {
 		rec := models.UserDataList{
 			ID:       el.Id,

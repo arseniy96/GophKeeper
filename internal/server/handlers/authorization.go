@@ -29,7 +29,7 @@ func (s *Server) SignUp(ctx context.Context, in *pb.SignUpRequest) (*pb.SignUpRe
 
 	authToken, err := s.updateUserToken(ctx, login)
 	if err != nil {
-		s.Logger.Log.Errorf("update user token error: %v", err)
+		s.Logger.Log.Errorf("update user token error: %v", err) //nolint:goconst,nolintlint // it's format
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
 
@@ -47,7 +47,6 @@ func (s *Server) SignIn(ctx context.Context, in *pb.SignInRequest) (*pb.SignInRe
 			s.Logger.Log.Debugf("user with login `%v` not found", login)
 			return nil, status.Error(codes.NotFound, http.StatusText(http.StatusUnauthorized))
 		}
-
 	}
 	encryptedPass := mycrypto.HashFunc(pass)
 	if user.Password != encryptedPass {
@@ -57,7 +56,7 @@ func (s *Server) SignIn(ctx context.Context, in *pb.SignInRequest) (*pb.SignInRe
 
 	authToken, err := s.updateUserToken(ctx, login)
 	if err != nil {
-		s.Logger.Log.Errorf("update user token error: %v", err)
+		s.Logger.Log.Errorf("update user token error: %v", err) //nolint:goconst,nolintlint // it's format
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
 
@@ -75,7 +74,7 @@ func (s *Server) updateUserToken(ctx context.Context, login string) (string, err
 	encryptedToken := mycrypto.HashFunc(authToken)
 	err = s.Storage.UpdateUserToken(ctx, login, encryptedToken)
 	if err != nil {
-		s.Logger.Log.Errorf("update user token error: %v", err)
+		s.Logger.Log.Errorf("update user token error: %v", err) //nolint:goconst,nolintlint // it's format
 		return "", err
 	}
 

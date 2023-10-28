@@ -8,9 +8,9 @@ import (
 )
 
 type Config struct {
-	ConnectionTimeout int64  `json:"connection_timeout" env:"CONNECTION_TIMEOUT"`
 	Host              string `json:"host" env:"HOST"`
 	LogLevel          string `json:"log_level" env:"LOG_LEVEL"`
+	ConnectionTimeout int64  `json:"connection_timeout" env:"CONNECTION_TIMEOUT"`
 }
 
 func Initialize() (*Config, error) {

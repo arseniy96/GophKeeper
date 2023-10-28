@@ -32,12 +32,12 @@ func userSignIn(c Client) (string, error) {
 	)
 
 	utils.SlowPrint("Please enter your login and password.")
-	fmt.Printf("login: ")
+	fmt.Print(loginInput)
 	_, err = fmt.Scan(&login)
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf("password: ")
+	fmt.Print(passwordInput)
 	_, err = fmt.Scan(&password)
 	if err != nil {
 		return "", err
@@ -48,7 +48,7 @@ func userSignIn(c Client) (string, error) {
 		Password: password,
 	})
 	if err != nil {
-		return "", UserNotAuthorized
+		return "", ErrUserNotAuthorized
 	}
 
 	return string(token), nil
@@ -61,12 +61,12 @@ func userSignUp(c Client) (string, error) {
 	)
 
 	utils.SlowPrint("Please enter login and password.")
-	fmt.Printf("login: ")
+	fmt.Print(loginInput)
 	_, err = fmt.Scan(&login)
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf("password: ")
+	fmt.Print(passwordInput)
 	_, err = fmt.Scan(&password)
 	if err != nil {
 		return "", err
@@ -77,7 +77,7 @@ func userSignUp(c Client) (string, error) {
 		Password: password,
 	})
 	if err != nil {
-		return "", UserNotAuthorized
+		return "", ErrUserNotAuthorized
 	}
 
 	return string(token), nil

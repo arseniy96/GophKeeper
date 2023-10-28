@@ -8,9 +8,9 @@ type AuthModel struct {
 type AuthToken string
 
 type UserDataList struct {
-	ID       int64
 	Name     string
 	DataType string
+	ID       int64
 	Version  int64
 }
 
@@ -19,9 +19,9 @@ type UserDataModel struct {
 }
 
 type UserData struct {
-	ID       int64
 	Name     string
 	DataType string
-	Version  int64
 	Data     []byte
+	ID       int64
+	Version  int64
 }

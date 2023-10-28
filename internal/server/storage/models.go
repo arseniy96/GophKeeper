@@ -1,25 +1,25 @@
 package storage
 
 type User struct {
-	ID       int64
 	Login    string
 	Password string
 	Token    string
+	ID       int64
 }
 
 type ShortRecord struct {
-	ID        int64
 	Name      string
 	DataType  string
-	Version   int64
 	CreatedAt string
+	ID        int64
+	Version   int64
 }
 
 type Record struct {
-	ID        int64
 	Name      string
-	Data      []byte
 	DataType  string
-	Version   int64
 	CreatedAt string
+	Data      []byte
+	Version   int64
+	ID        int64
 }

@@ -16,7 +16,7 @@ func GenRandomToken() (string, error) {
 	b := make([]byte, TokenSize)
 	_, err := rand.Read(b)
 	if err != nil {
-		return "", fmt.Errorf("create random slise error: %v", err)
+		return "", fmt.Errorf("create random slise error: %w", err)
 	}
 
 	return hex.EncodeToString(b), nil

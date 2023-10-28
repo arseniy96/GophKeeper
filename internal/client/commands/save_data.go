@@ -9,6 +9,13 @@ import (
 	"github.com/arseniy96/GophKeeper/internal/client/utils"
 )
 
+const (
+	passwordData = iota + 1
+	cardData
+	fileData
+	textData
+)
+
 func SaveData(c Client) error {
 	var (
 		DataTypes = [4]string{PasswordDataType, CardDataType, FileDataType, TextDataType}
@@ -48,37 +55,41 @@ func SaveData(c Client) error {
 
 func buildData(dti int) (*models.UserData, error) {
 	switch dti {
-	case 1:
+	case passwordData:
 		return buildPassword()
-	case 2:
+	case cardData:
 		return buildCardData()
-	case 4:
+	case textData:
 		return buildTextData()
 	default:
-		return nil, UnknownDataType
+		return nil, ErrUnknownDataType
 	}
 }
 
 func buildPassword() (*models.UserData, error) {
-	utils.SlowPrint("Please enter data")
+	utils.SlowPrint("Please enter password data")
 	pass := &PasswordData{}
-	fmt.Printf("site: ")
+	fmt.Print(siteInput)
 	_, err := fmt.Scanln(&pass.Site)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("login: ")
+	fmt.Print(loginInput)
 	_, err = fmt.Scanln(&pass.Login)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("password: ")
+	fmt.Print(passwordInput)
 	_, err = fmt.Scanln(&pass.Password)
 	if err != nil {
 		return nil, err
 	}
 
 	byteData, err := easyjson.Marshal(pass)
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.UserData{
 		DataType: PasswordDataType,
 		Data:     byteData,
@@ -86,25 +97,29 @@ func buildPassword() (*models.UserData, error) {
 }
 
 func buildCardData() (*models.UserData, error) {
-	utils.SlowPrint("Please enter data")
+	utils.SlowPrint("Please enter card details")
 	card := &CardData{}
-	fmt.Printf("card number: ")
+	fmt.Print(cardNumberInput)
 	_, err := fmt.Scanln(&card.Number)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("expired date (mm/yy): ")
+	fmt.Print(cardExpDateInput)
 	_, err = fmt.Scanln(&card.ExpDate)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("card holder: ")
+	fmt.Print(cardHolderInput)
 	_, err = fmt.Scanln(&card.CardHolder)
 	if err != nil {
 		return nil, err
 	}
 
 	byteData, err := easyjson.Marshal(card)
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.UserData{
 		DataType: CardDataType,
 		Data:     byteData,
@@ -120,6 +135,10 @@ func buildTextData() (*models.UserData, error) {
 	}
 
 	byteData, err := easyjson.Marshal(text)
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.UserData{
 		DataType: TextDataType,
 		Data:     byteData,

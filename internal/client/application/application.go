@@ -14,10 +14,10 @@ import (
 )
 
 type Client struct {
-	AuthToken  string
 	ClientGRPC pb.GophKeeperClient
 	Config     *config.Config
 	Logger     *logger.Logger
+	AuthToken  string
 }
 
 func NewClient(l *logger.Logger, c *config.Config) *Client {

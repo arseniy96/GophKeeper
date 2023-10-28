@@ -45,7 +45,8 @@ func startSession(client Client) error {
 		case getUserDataList:
 			err := GetUserDataList(client)
 			if err != nil {
-				if errors.Is(err, NoDataErr) {
+				if errors.Is(err, ErrNoData) {
+					//nolint:goconst,nolintlint // it's print
 					utils.SlowPrint("You have no saved data")
 					return nil
 				}
@@ -67,9 +68,5 @@ func startSession(client Client) error {
 			fmt.Println("Unknown command")
 		}
 		fmt.Printf("\n====================\n\n")
-
-		//p := tea.NewProgram(ui.InitialUIModel(client))
-		//_, err := p.Run()
-		//return err
 	}
 }

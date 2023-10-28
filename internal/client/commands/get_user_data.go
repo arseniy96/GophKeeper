@@ -14,7 +14,8 @@ import (
 func GetUserData(c Client) error {
 	err := GetUserDataList(c)
 	if err != nil {
-		if errors.Is(err, NoDataErr) {
+		if errors.Is(err, ErrNoData) {
+			//nolint:goconst,nolintlint // it's print
 			utils.SlowPrint("You have no saved data")
 			return nil
 		}
@@ -30,7 +31,7 @@ func GetUserData(c Client) error {
 
 	data, err := c.GetUserData(models.UserDataModel{ID: dataID})
 	if err != nil {
-		fmt.Println("Something went wrong")
+		fmt.Printf("Something went wrong, error: %v", err)
 		return nil
 	}
 
@@ -43,6 +44,7 @@ func GetUserData(c Client) error {
 }
 
 func printData(data *models.UserData) error {
+	var pretty []byte
 	dataType := data.DataType
 	switch dataType {
 	case PasswordDataType:
@@ -51,25 +53,37 @@ func printData(data *models.UserData) error {
 		if err != nil {
 			return err
 		}
-		pretty, err := json.MarshalIndent(passData, "", "  ")
-		fmt.Printf("\nYour data is:\n%s", pretty)
+		//nolint:goconst,nolintlint // it's format
+		pretty, err = json.MarshalIndent(passData, "", "  ")
+		if err != nil {
+			return err
+		}
 	case CardDataType:
 		cardData := &CardData{}
 		err := easyjson.Unmarshal(data.Data, cardData)
 		if err != nil {
 			return err
 		}
-		pretty, err := json.MarshalIndent(cardData, "", "  ")
-		fmt.Printf("\nYour data is:\n%s", pretty)
+		//nolint:goconst,nolintlint // it's format
+		pretty, err = json.MarshalIndent(cardData, "", "  ")
+		if err != nil {
+			return err
+		}
 	case TextDataType:
 		textData := &TextData{}
 		err := easyjson.Unmarshal(data.Data, textData)
 		if err != nil {
 			return err
 		}
-		pretty, err := json.MarshalIndent(textData, "", "  ")
-		fmt.Printf("\nYour data is:\n%s", pretty)
+		//nolint:goconst,nolintlint // it's format
+		pretty, err = json.MarshalIndent(textData, "", "  ")
+		if err != nil {
+			return err
+		}
+	default:
+		return nil
 	}
+	fmt.Printf("\nYour data is:\n%s", pretty)
 
 	return nil
 }
