@@ -1,15 +1,17 @@
 package main
 
 import (
+	"log"
+
 	"github.com/arseniy96/GophKeeper/internal/server/config"
 	"github.com/arseniy96/GophKeeper/internal/server/handlers"
-	"github.com/arseniy96/GophKeeper/internal/server/logger"
 	"github.com/arseniy96/GophKeeper/internal/server/storage"
+	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
 func main() {
 	if err := run(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 

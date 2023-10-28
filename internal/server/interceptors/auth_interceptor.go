@@ -10,10 +10,10 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"github.com/arseniy96/GophKeeper/internal/server/logger"
 	"github.com/arseniy96/GophKeeper/internal/server/storage"
 	"github.com/arseniy96/GophKeeper/internal/services/mycrypto"
 	"github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
+	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
 type store interface {

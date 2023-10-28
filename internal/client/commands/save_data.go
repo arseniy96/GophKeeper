@@ -50,10 +50,12 @@ func buildData(dti int) (*models.UserData, error) {
 	switch dti {
 	case 1:
 		return buildPassword()
-	//case 2:
-	//	return buildCardData()
+	case 2:
+		return buildCardData()
+	case 4:
+		return buildTextData()
 	default:
-		return nil, fmt.Errorf("unknown data type")
+		return nil, UnknownDataType
 	}
 }
 
@@ -79,6 +81,47 @@ func buildPassword() (*models.UserData, error) {
 	byteData, err := easyjson.Marshal(pass)
 	return &models.UserData{
 		DataType: PasswordDataType,
+		Data:     byteData,
+	}, nil
+}
+
+func buildCardData() (*models.UserData, error) {
+	utils.SlowPrint("Please enter data")
+	card := &CardData{}
+	fmt.Printf("card number: ")
+	_, err := fmt.Scanln(&card.Number)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("expired date (mm/yy): ")
+	_, err = fmt.Scanln(&card.ExpDate)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("card holder: ")
+	_, err = fmt.Scanln(&card.CardHolder)
+	if err != nil {
+		return nil, err
+	}
+
+	byteData, err := easyjson.Marshal(card)
+	return &models.UserData{
+		DataType: CardDataType,
+		Data:     byteData,
+	}, nil
+}
+
+func buildTextData() (*models.UserData, error) {
+	utils.SlowPrint("Please enter text")
+	text := &TextData{}
+	_, err := fmt.Scan(&text.Text)
+	if err != nil {
+		return nil, err
+	}
+
+	byteData, err := easyjson.Marshal(text)
+	return &models.UserData{
+		DataType: TextDataType,
 		Data:     byteData,
 	}, nil
 }

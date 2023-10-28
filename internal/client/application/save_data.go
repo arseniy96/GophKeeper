@@ -21,5 +21,10 @@ func (c *Client) SaveUserData(model *models.UserData) error {
 		DataType: model.DataType,
 	}
 	_, err := c.ClientGRPC.SaveData(ctx, req)
-	return err
+	if err != nil {
+		c.Logger.Log.Errorf("save user data error: %v", err)
+		return err
+	}
+
+	return nil
 }

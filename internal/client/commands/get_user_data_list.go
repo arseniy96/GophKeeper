@@ -7,10 +7,12 @@ import (
 )
 
 func GetUserDataList(c Client) error {
-	// TODO: добавить обработку пустого массива
 	records, err := c.GetUserDataList()
 	if err != nil {
-		return nil
+		return err
+	}
+	if len(records) == 0 {
+		return NoDataErr
 	}
 
 	utils.SlowPrint("You have these saved data:")

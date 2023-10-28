@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -11,11 +10,11 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/jmoiron/sqlx"
 
-	"github.com/arseniy96/GophKeeper/internal/server/logger"
+	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
 const (
@@ -26,14 +25,15 @@ var ErrConflict = errors.New(`already exists`)
 var ErrNowRows = errors.New(`missing data`)
 
 type Database struct {
-	DB *sqlx.DB
+	DB *pgx.Conn
 }
 
 func NewStorage(dsn string, l *logger.Logger) (*Database, error) {
 	if err := runMigrations(dsn); err != nil {
 		return nil, fmt.Errorf("migrations failed with error: %w", err)
 	}
-	db, err := sqlx.Open("pgx", dsn)
+
+	db, err := pgx.Connect(context.Background(), dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -64,22 +64,25 @@ func (db *Database) HealthCheck() error {
 	ctx, cancel := context.WithTimeout(context.Background(), TimeOut)
 	defer cancel()
 
-	return db.DB.PingContext(ctx)
+	return db.DB.Ping(ctx)
 }
 
 func (db *Database) Close() error {
-	return db.DB.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), TimeOut)
+	defer cancel()
+
+	return db.DB.Close(ctx)
 }
 
 func (db *Database) CreateUser(ctx context.Context, login, password string) error {
-	tx, err := db.DB.Beginx()
+	tx, err := db.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 
 	var pgErr *pgconn.PgError
-	_, err = tx.ExecContext(ctx,
+	_, err = tx.Exec(ctx,
 		`INSERT INTO users(login, password) VALUES($1, $2)`,
 		login, password)
 	if err != nil {
@@ -89,44 +92,44 @@ func (db *Database) CreateUser(ctx context.Context, login, password string) erro
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func (db *Database) UpdateUserToken(ctx context.Context, login, token string) error {
-	tx, err := db.DB.Beginx()
+	tx, err := db.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 
-	_, err = tx.ExecContext(ctx,
+	_, err = tx.Exec(ctx,
 		`UPDATE users SET token=$1 WHERE login=$2`,
 		token, login)
 	if err != nil {
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, error) {
-	tx, err := db.DB.Beginx()
+	tx, err := db.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 
 	var u User
-	err = tx.QueryRowContext(ctx,
+	err = tx.QueryRow(ctx,
 		`SELECT id, login, password, token FROM users WHERE login=$1 LIMIT(1)`,
 		login).Scan(&u.ID, &u.Login, &u.Password, &u.Token)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNowRows
 		}
 		return nil, err
 	}
-	err = tx.Commit()
+	err = tx.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -135,23 +138,23 @@ func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, e
 }
 
 func (db *Database) FindUserByToken(ctx context.Context, token string) (*User, error) {
-	tx, err := db.DB.Beginx()
+	tx, err := db.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 
 	var u User
-	err = tx.QueryRowContext(ctx,
+	err = tx.QueryRow(ctx,
 		`SELECT id, login, password, token FROM users WHERE token=$1 LIMIT(1)`,
 		token).Scan(&u.ID, &u.Login, &u.Password, &u.Token)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNowRows
 		}
 		return nil, err
 	}
-	err = tx.Commit()
+	err = tx.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -160,15 +163,15 @@ func (db *Database) FindUserByToken(ctx context.Context, token string) (*User, e
 }
 
 func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataType string, data []byte) error {
-	tx, err := db.DB.Beginx()
+	tx, err := db.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 
 	var pgErr *pgconn.PgError
 
-	_, err = tx.ExecContext(ctx,
+	_, err = tx.Exec(ctx,
 		`INSERT INTO user_records(name, data, data_type, user_id) VALUES($1, $2, $3, $4)`,
 		name, data, dataType, userID)
 
@@ -179,18 +182,18 @@ func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataTy
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecord, error) {
-	tx, err := db.DB.Beginx()
+	tx, err := db.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 
-	rows, err := tx.QueryContext(ctx,
-		`SELECT id, name, data_type, version, created_at from user_records where user_id=$1`,
+	rows, err := tx.Query(ctx,
+		`SELECT id, name, data_type, version from user_records where user_id=$1`,
 		userID)
 	if err != nil {
 		return nil, err
@@ -200,7 +203,7 @@ func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecor
 	var records []ShortRecord
 	for rows.Next() {
 		var rec ShortRecord
-		err = rows.Scan(&rec.ID, &rec.Name, &rec.DataType, &rec.Version, &rec.CreatedAt)
+		err = rows.Scan(&rec.ID, &rec.Name, &rec.DataType, &rec.Version)
 		if err != nil {
 			return nil, err
 		}
@@ -211,7 +214,7 @@ func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecor
 		return nil, err
 	}
 
-	err = tx.Commit()
+	err = tx.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -220,24 +223,24 @@ func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecor
 }
 
 func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Record, error) {
-	tx, err := db.DB.Beginx()
+	tx, err := db.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 
 	var rec Record
-	err = tx.QueryRowContext(ctx,
-		`SELECT id, name, data, data_type, version, created_at FROM user_records where id=$1 AND user_id=$2`,
-		id, userID).Scan(&rec.ID, &rec.Name, &rec.Data, &rec.DataType, &rec.Version, &rec.CreatedAt)
+	err = tx.QueryRow(ctx,
+		`SELECT id, name, data, data_type, version FROM user_records where id=$1 AND user_id=$2`,
+		id, userID).Scan(&rec.ID, &rec.Name, &rec.Data, &rec.DataType, &rec.Version)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNowRows
 		}
 		return nil, err
 	}
-	err = tx.Commit()
+	err = tx.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -18,6 +18,7 @@ func (c *Client) GetUserDataList() ([]models.UserDataList, error) {
 	req := &pb.UserDataListRequest{}
 	res, err := c.ClientGRPC.GetUserDataList(ctx, req)
 	if err != nil {
+		c.Logger.Log.Errorf("get user data list error: %v", err)
 		return nil, err
 	}
 

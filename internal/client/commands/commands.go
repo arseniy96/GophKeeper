@@ -11,9 +11,11 @@ const (
 
 type Client interface {
 	SignIn(auth models.AuthModel) (models.AuthToken, error)
+	SignUp(auth models.AuthModel) (models.AuthToken, error)
 	GetUserDataList() ([]models.UserDataList, error)
 	GetUserData(models.UserDataModel) (*models.UserData, error)
 	SaveUserData(*models.UserData) error
+	UpdateAuthToken(token string)
 }
 
 type PasswordData struct {

@@ -18,7 +18,7 @@ func (c *Client) GetUserData(model models.UserDataModel) (*models.UserData, erro
 	req := &pb.UserDataRequest{Id: model.ID}
 	res, err := c.ClientGRPC.GetUserData(ctx, req)
 	if err != nil {
-		// TODO: обрабатывать ошибку
+		c.Logger.Log.Errorf("get user data error: %v", err)
 		return nil, err
 	}
 

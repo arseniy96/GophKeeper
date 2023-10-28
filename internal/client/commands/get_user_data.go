@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/mailru/easyjson"
@@ -13,6 +14,10 @@ import (
 func GetUserData(c Client) error {
 	err := GetUserDataList(c)
 	if err != nil {
+		if errors.Is(err, NoDataErr) {
+			utils.SlowPrint("You have no saved data")
+			return nil
+		}
 		return err
 	}
 
@@ -25,7 +30,8 @@ func GetUserData(c Client) error {
 
 	data, err := c.GetUserData(models.UserDataModel{ID: dataID})
 	if err != nil {
-		return err
+		fmt.Println("Something went wrong")
+		return nil
 	}
 
 	err = printData(data)

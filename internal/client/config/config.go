@@ -9,13 +9,12 @@ import (
 
 type Config struct {
 	ConnectionTimout int64  `json:"connection_timeout" env:"CONNECTION_TIMEOUT"`
-	DatabaseDSN      string `json:"database_dsn" env:"DATABASE_DSN"`
 	Host             string `json:"host" env:"HOST"`
 	LogLevel         string `json:"log_level" env:"LOG_LEVEL"`
 }
 
 func Initialize() (*Config, error) {
-	configFile, err := os.Open("./config/server/settings/production.json")
+	configFile, err := os.Open("./config/client/settings/production.json")
 	if err != nil {
 		return nil, err
 	}

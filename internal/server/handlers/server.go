@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os/signal"
 	"sync"
@@ -12,9 +13,9 @@ import (
 
 	"github.com/arseniy96/GophKeeper/internal/server/config"
 	"github.com/arseniy96/GophKeeper/internal/server/interceptors"
-	"github.com/arseniy96/GophKeeper/internal/server/logger"
 	"github.com/arseniy96/GophKeeper/internal/server/storage"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
+	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
 type Repository interface {
@@ -46,7 +47,8 @@ func NewServer(r Repository, c *config.Config, l *logger.Logger) *Server {
 func (s *Server) Start() error {
 	listen, err := net.Listen("tcp", s.Config.Host)
 	if err != nil {
-		return err
+		s.Logger.Log.Error(err)
+		return fmt.Errorf("tcp connection failed")
 	}
 
 	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
