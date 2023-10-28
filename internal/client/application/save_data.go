@@ -2,18 +2,14 @@ package application
 
 import (
 	"context"
-	"time"
-
-	"google.golang.org/grpc/metadata"
 
 	"github.com/arseniy96/GophKeeper/internal/client/models"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
 func (c *Client) SaveUserData(model *models.UserData) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), c.GetTimeout())
 	defer cancel()
-	ctx = metadata.AppendToOutgoingContext(ctx, "token", c.AuthToken)
 
 	req := &pb.SaveDataRequest{
 		Name:     model.Name,

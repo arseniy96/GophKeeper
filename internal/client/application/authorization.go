@@ -2,14 +2,13 @@ package application
 
 import (
 	"context"
-	"time"
 
 	"github.com/arseniy96/GophKeeper/internal/client/models"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
 func (c *Client) SignIn(model models.AuthModel) (models.AuthToken, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), c.GetTimeout())
 	defer cancel()
 
 	req := &pb.SignInRequest{
@@ -26,7 +25,7 @@ func (c *Client) SignIn(model models.AuthModel) (models.AuthToken, error) {
 }
 
 func (c *Client) SignUp(model models.AuthModel) (models.AuthToken, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), c.GetTimeout())
 	defer cancel()
 
 	req := &pb.SignUpRequest{
