@@ -20,7 +20,7 @@ type Client struct {
 	AuthToken  string
 }
 
-func NewClient(l *logger.Logger, c *config.Config) *Client {
+func NewClient(l *logger.Logger, c *config.Config) (*Client, func() error) {
 	client := &Client{
 		Config: c,
 		Logger: l,
@@ -37,7 +37,7 @@ func NewClient(l *logger.Logger, c *config.Config) *Client {
 	gRPCClient := pb.NewGophKeeperClient(conn)
 	client.ClientGRPC = gRPCClient
 
-	return client
+	return client, conn.Close
 }
 
 func (c *Client) UpdateAuthToken(token string) {

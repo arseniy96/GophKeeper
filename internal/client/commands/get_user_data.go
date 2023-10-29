@@ -48,35 +48,46 @@ func printData(data *models.UserData) error {
 	dataType := data.DataType
 	switch dataType {
 	case PasswordDataType:
-		passData := &PasswordData{}
-		err := easyjson.Unmarshal(data.Data, passData)
+		passStruct := &PasswordData{}
+		err := easyjson.Unmarshal(data.Data, passStruct)
 		if err != nil {
 			return err
 		}
 		//nolint:goconst,nolintlint // it's format
-		pretty, err = json.MarshalIndent(passData, "", "  ")
+		pretty, err = json.MarshalIndent(passStruct, "", "  ")
 		if err != nil {
 			return err
 		}
 	case CardDataType:
-		cardData := &CardData{}
-		err := easyjson.Unmarshal(data.Data, cardData)
+		cardStruct := &CardData{}
+		err := easyjson.Unmarshal(data.Data, cardStruct)
 		if err != nil {
 			return err
 		}
 		//nolint:goconst,nolintlint // it's format
-		pretty, err = json.MarshalIndent(cardData, "", "  ")
+		pretty, err = json.MarshalIndent(cardStruct, "", "  ")
+		if err != nil {
+			return err
+		}
+	case FileDataType:
+		fileStruct := &FileData{}
+		err := easyjson.Unmarshal(data.Data, fileStruct)
+		if err != nil {
+			return nil
+		}
+		//nolint:goconst,nolintlint // it's format
+		pretty, err = json.MarshalIndent(fileStruct, "", "  ")
 		if err != nil {
 			return err
 		}
 	case TextDataType:
-		textData := &TextData{}
-		err := easyjson.Unmarshal(data.Data, textData)
+		textStruct := &TextData{}
+		err := easyjson.Unmarshal(data.Data, textStruct)
 		if err != nil {
 			return err
 		}
 		//nolint:goconst,nolintlint // it's format
-		pretty, err = json.MarshalIndent(textData, "", "  ")
+		pretty, err = json.MarshalIndent(textStruct, "", "  ")
 		if err != nil {
 			return err
 		}

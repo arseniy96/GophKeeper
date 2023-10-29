@@ -261,3 +261,20 @@ func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Reco
 
 	return &rec, nil
 }
+
+func (db *Database) UpdateUserRecord(ctx context.Context, rec *Record) error {
+	tx, err := db.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
+
+	_, err = tx.Exec(ctx, `UPDATE user_records SET data=$1, version=version+1 WHERE id=$2`, rec.Data, rec.ID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}

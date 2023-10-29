@@ -1,7 +1,10 @@
 package commands
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/mailru/easyjson"
 
@@ -18,12 +21,11 @@ const (
 
 func SaveData(c Client) error {
 	var (
-		DataTypes = [4]string{PasswordDataType, CardDataType, FileDataType, TextDataType}
-		dti       int
-		name      string
+		dti  int
+		name string
 	)
 	utils.SlowPrint("What data type do you want to save?")
-	for i, dt := range DataTypes {
+	for i, dt := range dataTypes {
 		fmt.Printf("%v. %v\n", i+1, dt)
 	}
 	_, err := fmt.Scanln(&dti)
@@ -59,6 +61,8 @@ func buildData(dti int) (*models.UserData, error) {
 		return buildPassword()
 	case cardData:
 		return buildCardData()
+	case fileData:
+		return buildFileData()
 	case textData:
 		return buildTextData()
 	default:
@@ -127,8 +131,8 @@ func buildCardData() (*models.UserData, error) {
 }
 
 func buildTextData() (*models.UserData, error) {
-	utils.SlowPrint("Please enter text")
 	text := &TextData{}
+	utils.SlowPrint("Please enter text")
 	_, err := fmt.Scan(&text.Text)
 	if err != nil {
 		return nil, err
@@ -141,6 +145,44 @@ func buildTextData() (*models.UserData, error) {
 
 	return &models.UserData{
 		DataType: TextDataType,
+		Data:     byteData,
+	}, nil
+}
+
+func buildFileData() (*models.UserData, error) {
+	file := &FileData{}
+	utils.SlowPrint("Please enter path to file")
+	_, err := fmt.Scan(&file.Path)
+	if err != nil {
+		return nil, err
+	}
+	openedFile, err := os.Open(file.Path)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = openedFile.Close()
+	}()
+
+	stat, err := openedFile.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	bs := make([]byte, stat.Size())
+	_, err = bufio.NewReader(openedFile).Read(bs)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+	file.Data = bs
+
+	byteData, err := easyjson.Marshal(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UserData{
+		DataType: FileDataType,
 		Data:     byteData,
 	}, nil
 }

@@ -25,7 +25,10 @@ func run() error {
 		return err
 	}
 
-	client := application.NewClient(l, settings)
+	client, cancel := application.NewClient(l, settings)
+	defer func() {
+		_ = cancel()
+	}()
 
 	return commands.Start(client)
 }

@@ -25,6 +25,7 @@ const (
 	GophKeeper_SaveData_FullMethodName        = "/gophkeeper.GophKeeper/SaveData"
 	GophKeeper_GetUserDataList_FullMethodName = "/gophkeeper.GophKeeper/GetUserDataList"
 	GophKeeper_GetUserData_FullMethodName     = "/gophkeeper.GophKeeper/GetUserData"
+	GophKeeper_UpdateUserData_FullMethodName  = "/gophkeeper.GophKeeper/UpdateUserData"
 )
 
 // GophKeeperClient is the client API for GophKeeper service.
@@ -37,6 +38,7 @@ type GophKeeperClient interface {
 	SaveData(ctx context.Context, in *SaveDataRequest, opts ...grpc.CallOption) (*SaveDataResponse, error)
 	GetUserDataList(ctx context.Context, in *UserDataListRequest, opts ...grpc.CallOption) (*UserDataListResponse, error)
 	GetUserData(ctx context.Context, in *UserDataRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
+	UpdateUserData(ctx context.Context, in *UpdateUserDataRequest, opts ...grpc.CallOption) (*UpdateUserDataResponse, error)
 }
 
 type gophKeeperClient struct {
@@ -101,6 +103,15 @@ func (c *gophKeeperClient) GetUserData(ctx context.Context, in *UserDataRequest,
 	return out, nil
 }
 
+func (c *gophKeeperClient) UpdateUserData(ctx context.Context, in *UpdateUserDataRequest, opts ...grpc.CallOption) (*UpdateUserDataResponse, error) {
+	out := new(UpdateUserDataResponse)
+	err := c.cc.Invoke(ctx, GophKeeper_UpdateUserData_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GophKeeperServer is the server API for GophKeeper service.
 // All implementations must embed UnimplementedGophKeeperServer
 // for forward compatibility
@@ -111,6 +122,7 @@ type GophKeeperServer interface {
 	SaveData(context.Context, *SaveDataRequest) (*SaveDataResponse, error)
 	GetUserDataList(context.Context, *UserDataListRequest) (*UserDataListResponse, error)
 	GetUserData(context.Context, *UserDataRequest) (*UserDataResponse, error)
+	UpdateUserData(context.Context, *UpdateUserDataRequest) (*UpdateUserDataResponse, error)
 	mustEmbedUnimplementedGophKeeperServer()
 }
 
@@ -135,6 +147,9 @@ func (UnimplementedGophKeeperServer) GetUserDataList(context.Context, *UserDataL
 }
 func (UnimplementedGophKeeperServer) GetUserData(context.Context, *UserDataRequest) (*UserDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserData not implemented")
+}
+func (UnimplementedGophKeeperServer) UpdateUserData(context.Context, *UpdateUserDataRequest) (*UpdateUserDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserData not implemented")
 }
 func (UnimplementedGophKeeperServer) mustEmbedUnimplementedGophKeeperServer() {}
 
@@ -257,6 +272,24 @@ func _GophKeeper_GetUserData_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GophKeeper_UpdateUserData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GophKeeperServer).UpdateUserData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GophKeeper_UpdateUserData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GophKeeperServer).UpdateUserData(ctx, req.(*UpdateUserDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GophKeeper_ServiceDesc is the grpc.ServiceDesc for GophKeeper service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -287,6 +320,10 @@ var GophKeeper_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserData",
 			Handler:    _GophKeeper_GetUserData_Handler,
+		},
+		{
+			MethodName: "UpdateUserData",
+			Handler:    _GophKeeper_UpdateUserData_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

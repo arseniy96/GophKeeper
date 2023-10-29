@@ -27,6 +27,7 @@ type Repository interface {
 	SaveUserData(ctx context.Context, userID int64, name, dataType string, data []byte) error
 	GetUserData(ctx context.Context, userID int64) ([]storage.ShortRecord, error)
 	FindUserRecord(ctx context.Context, id, userID int64) (*storage.Record, error)
+	UpdateUserRecord(ctx context.Context, record *storage.Record) error
 }
 
 type Server struct {

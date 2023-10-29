@@ -11,6 +11,7 @@ service GophKeeper {
   rpc SaveData(SaveDataRequest) returns(SaveDataResponse);
   rpc GetUserDataList(UserDataListRequest) returns(UserDataListResponse);
   rpc GetUserData(UserDataRequest) returns(UserDataResponse);
+  rpc UpdateUserData(UpdateUserDataRequest) returns(UpdateUserDataResponse);
 }
 
 // PingRequest - запрос на ping (empty)
@@ -80,4 +81,15 @@ message UserDataResponse{
   string data_type = 4;
   int64 version = 5;
   string create_at = 6;
+}
+
+// UpdateUserDataRequest – запрос на обновление данных
+message UpdateUserDataRequest{
+  int64 id = 1;
+  bytes data = 2;
+  int64 version = 3;
+}
+// UpdateUserDataResponse – результат обновления
+message UpdateUserDataResponse{
+  string result = 1;
 }

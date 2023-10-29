@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS user_records
     name       VARCHAR(50) NOT NULL,
     data       BYTEA       NOT NULL,
     data_type  VARCHAR(50) NOT NULL,
-    version    SERIAL,
+    version    INT         NOT NULL DEFAULT 0,
     created_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     user_id    INT         NOT NULL,
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id)

@@ -63,7 +63,10 @@ func startSession(client Client) error {
 				return err
 			}
 		case editUserData:
-			return nil
+			err := EditData(client)
+			if err != nil {
+				return err
+			}
 		default:
 			fmt.Println("Unknown command")
 		}

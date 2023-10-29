@@ -15,6 +15,7 @@ type Client interface {
 	GetUserDataList() ([]models.UserDataList, error)
 	GetUserData(models.UserDataModel) (*models.UserData, error)
 	SaveUserData(*models.UserData) error
+	UpdateUserData(*models.UserData) error
 	UpdateAuthToken(token string)
 }
 
