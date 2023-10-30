@@ -23,16 +23,22 @@ func GetUserData(c Client) error {
 	}
 
 	utils.SlowPrint("Please enter data id")
-	var dataID int64
+	var (
+		data   *models.UserData
+		dataID int64
+	)
 	_, err = fmt.Scan(&dataID)
 	if err != nil {
 		return err
 	}
 
-	data, err := c.GetUserData(models.UserDataModel{ID: dataID})
+	data, err = c.GetUserDataFromCache(models.UserDataModel{ID: dataID})
 	if err != nil {
-		fmt.Printf("Something went wrong, error: %v", err)
-		return nil
+		data, err = c.GetUserData(models.UserDataModel{ID: dataID})
+		if err != nil {
+			fmt.Printf("Something went wrong, error: %v", err)
+			return nil
+		}
 	}
 
 	err = printData(data)

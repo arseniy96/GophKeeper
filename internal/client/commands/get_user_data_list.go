@@ -9,7 +9,8 @@ import (
 func GetUserDataList(c Client) error {
 	records, err := c.GetUserDataList()
 	if err != nil {
-		return err
+		fmt.Printf("get user data list error: %v", err) // TODO: в логгер
+		records = c.GetUserDataListFromCache()
 	}
 	if len(records) == 0 {
 		return ErrNoData

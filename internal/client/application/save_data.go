@@ -21,6 +21,7 @@ func (c *Client) SaveUserData(model *models.UserData) error {
 		c.Logger.Log.Errorf("save user data error: %v", err)
 		return err
 	}
+	c.AppendDataToCache(model)
 
 	return nil
 }

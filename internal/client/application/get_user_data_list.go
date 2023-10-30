@@ -28,6 +28,7 @@ func (c *Client) GetUserDataList() ([]models.UserDataList, error) {
 		}
 		records = append(records, rec)
 	}
+	c.SyncCache(records)
 
 	return records, nil
 }

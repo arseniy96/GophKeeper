@@ -13,7 +13,9 @@ type Client interface {
 	SignIn(auth models.AuthModel) (models.AuthToken, error)
 	SignUp(auth models.AuthModel) (models.AuthToken, error)
 	GetUserDataList() ([]models.UserDataList, error)
+	GetUserDataListFromCache() []models.UserDataList
 	GetUserData(models.UserDataModel) (*models.UserData, error)
+	GetUserDataFromCache(models.UserDataModel) (*models.UserData, error)
 	SaveUserData(*models.UserData) error
 	UpdateUserData(*models.UserData) error
 	UpdateAuthToken(token string)

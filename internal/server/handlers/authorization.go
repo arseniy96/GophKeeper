@@ -66,13 +66,15 @@ func (s *Server) SignIn(ctx context.Context, in *pb.SignInRequest) (*pb.SignInRe
 }
 
 func (s *Server) updateUserToken(ctx context.Context, login string) (string, error) {
-	authToken, err := mycrypto.GenRandomToken()
-	if err != nil {
-		s.Logger.Log.Errorf("create random token error: %v", err)
-		return "", err
-	}
+	//authToken, err := mycrypto.GenRandomToken()
+	//if err != nil {
+	//	s.Logger.Log.Errorf("create random token error: %v", err)
+	//	return "", err
+	//}
+	// TODO: implement JWT
+	authToken := "882811db55e55c140e728b36ca540e39"
 	encryptedToken := mycrypto.HashFunc(authToken)
-	err = s.Storage.UpdateUserToken(ctx, login, encryptedToken)
+	err := s.Storage.UpdateUserToken(ctx, login, encryptedToken)
 	if err != nil {
 		s.Logger.Log.Errorf("update user token error: %v", err) //nolint:goconst,nolintlint // it's format
 		return "", err
