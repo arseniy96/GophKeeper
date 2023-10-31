@@ -2,7 +2,6 @@ package interceptors
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"google.golang.org/grpc"
@@ -10,17 +9,12 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"github.com/arseniy96/GophKeeper/internal/server/storage"
 	"github.com/arseniy96/GophKeeper/internal/services/mycrypto"
 	"github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
-type store interface {
-	FindUserByToken(context.Context, string) (*storage.User, error)
-}
-
-func AuthInterceptor(s store, l *logger.Logger) grpc.UnaryServerInterceptor {
+func AuthInterceptor(l *logger.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, r interface{}, i *grpc.UnaryServerInfo, h grpc.UnaryHandler) (interface{}, error) {
 		if i.FullMethod == gophkeeper.GophKeeper_SignUp_FullMethodName ||
 			i.FullMethod == gophkeeper.GophKeeper_SignIn_FullMethodName ||
@@ -39,18 +33,13 @@ func AuthInterceptor(s store, l *logger.Logger) grpc.UnaryServerInterceptor {
 			return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusForbidden))
 		}
 
-		encryptedToken := mycrypto.HashFunc(token)
-		user, err := s.FindUserByToken(ctx, encryptedToken)
+		userID, err := mycrypto.GetUserID(token, l)
 		if err != nil {
-			if errors.Is(err, storage.ErrNowRows) {
-				l.Log.Debugf("invalid token: %v", token)
-				return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusForbidden))
-			}
-			l.Log.Errorf("find user error: %v", err) //nolint:goconst,nolintlint // it's format
-			return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
+			l.Log.Debugf("invalid token: %v", token)
+			return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusForbidden))
 		}
 
-		ctx = context.WithValue(ctx, "user_id", user.ID)
+		ctx = context.WithValue(ctx, "user_id", userID)
 
 		return h(ctx, r)
 	}

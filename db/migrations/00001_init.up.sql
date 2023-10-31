@@ -1,19 +1,15 @@
 BEGIN TRANSACTION;
 
-CREATE TABLE IF NOT EXISTS users
-(
+CREATE TABLE IF NOT EXISTS users(
     id       INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     login    VARCHAR(50) NOT NULL,
-    password VARCHAR(50) NOT NULL,
-    token    VARCHAR(50) NULL
+    password VARCHAR(50) NOT NULL
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS login_idx on users (login);
-CREATE INDEX IF NOT EXISTS token_idx on users (token);
 
 
-CREATE TABLE IF NOT EXISTS user_records
-(
+CREATE TABLE IF NOT EXISTS user_records(
     id         INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name       VARCHAR(50) NOT NULL,
     data       BYTEA       NOT NULL,

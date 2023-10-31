@@ -18,9 +18,6 @@ func (s *Server) GetUserDataList(ctx context.Context, in *pb.UserDataListRequest
 		s.Logger.Log.Errorf("get user data error: %v", err)
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
-	if len(userRecords) == 0 {
-		return nil, status.Error(codes.NotFound, http.StatusText(http.StatusNoContent))
-	}
 
 	records := make([]*pb.UserDataNested, 0, len(userRecords))
 	for _, rec := range userRecords {

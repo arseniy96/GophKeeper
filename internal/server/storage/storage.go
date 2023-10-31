@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	TimeOut = 3 * time.Second
+	TimeOut        = 3 * time.Second
+	DefaultVersion = 1
 )
 
 var ErrConflict = errors.New(`already exists`)
@@ -97,25 +98,6 @@ func (db *Database) CreateUser(ctx context.Context, login, password string) erro
 	return tx.Commit(ctx)
 }
 
-func (db *Database) UpdateUserToken(ctx context.Context, login, token string) error {
-	tx, err := db.DB.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = tx.Rollback(ctx)
-	}()
-
-	_, err = tx.Exec(ctx,
-		`UPDATE users SET token=$1 WHERE login=$2`,
-		token, login)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit(ctx)
-}
-
 func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, error) {
 	tx, err := db.DB.Begin(ctx)
 	if err != nil {
@@ -127,35 +109,8 @@ func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, e
 
 	var u User
 	err = tx.QueryRow(ctx,
-		`SELECT id, login, password, token FROM users WHERE login=$1 LIMIT(1)`,
-		login).Scan(&u.ID, &u.Login, &u.Password, &u.Token)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrNowRows
-		}
-		return nil, err
-	}
-	err = tx.Commit(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &u, nil
-}
-
-func (db *Database) FindUserByToken(ctx context.Context, token string) (*User, error) {
-	tx, err := db.DB.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = tx.Rollback(ctx)
-	}()
-
-	var u User
-	err = tx.QueryRow(ctx,
-		`SELECT id, login, password, token FROM users WHERE token=$1 LIMIT(1)`,
-		token).Scan(&u.ID, &u.Login, &u.Password, &u.Token)
+		`SELECT id, login, password FROM users WHERE login=$1 LIMIT(1)`,
+		login).Scan(&u.ID, &u.Login, &u.Password)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNowRows
@@ -182,8 +137,8 @@ func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataTy
 	var pgErr *pgconn.PgError
 
 	_, err = tx.Exec(ctx,
-		`INSERT INTO user_records(name, data, data_type, user_id) VALUES($1, $2, $3, $4)`,
-		name, data, dataType, userID)
+		`INSERT INTO user_records(name, data, data_type, user_id, version) VALUES($1, $2, $3, $4, $5)`,
+		name, data, dataType, userID, DefaultVersion)
 
 	if err != nil {
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {

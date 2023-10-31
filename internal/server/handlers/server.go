@@ -21,9 +21,7 @@ import (
 type Repository interface {
 	HealthCheck() error
 	CreateUser(ctx context.Context, login, password string) error
-	UpdateUserToken(ctx context.Context, login, token string) error
 	FindUserByLogin(ctx context.Context, login string) (*storage.User, error)
-	FindUserByToken(ctx context.Context, token string) (*storage.User, error)
 	SaveUserData(ctx context.Context, userID int64, name, dataType string, data []byte) error
 	GetUserData(ctx context.Context, userID int64) ([]storage.ShortRecord, error)
 	FindUserRecord(ctx context.Context, id, userID int64) (*storage.Record, error)
@@ -53,7 +51,7 @@ func (s *Server) Start() error {
 	}
 
 	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		interceptors.AuthInterceptor(s.Storage, s.Logger),
+		interceptors.AuthInterceptor(s.Logger),
 		logging.UnaryServerInterceptor(interceptors.LoggerInterceptor()),
 	))
 
