@@ -9,11 +9,12 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/arseniy96/GophKeeper/internal/server/storage"
+	"github.com/arseniy96/GophKeeper/src"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
 func (s *Server) GetUserData(ctx context.Context, in *pb.UserDataRequest) (*pb.UserDataResponse, error) {
-	userID := ctx.Value("user_id").(int64)
+	userID := ctx.Value(src.UserIDContextKey).(int64)
 
 	record, err := s.Storage.FindUserRecord(ctx, in.Id, userID)
 	if err != nil {

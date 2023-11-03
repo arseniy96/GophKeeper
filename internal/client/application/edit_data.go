@@ -41,7 +41,7 @@ func (c *Client) EditData() error {
 		dti = 4
 	}
 
-	model, err := buildData(dti)
+	model, err := buildData(dti, c.printer)
 	if err != nil {
 		return err
 	}

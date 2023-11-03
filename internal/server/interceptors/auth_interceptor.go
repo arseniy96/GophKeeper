@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/arseniy96/GophKeeper/internal/services/mycrypto"
+	"github.com/arseniy96/GophKeeper/src"
 	"github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
@@ -39,7 +40,7 @@ func AuthInterceptor(l *logger.Logger, secret string) grpc.UnaryServerIntercepto
 			return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusForbidden))
 		}
 
-		ctx = context.WithValue(ctx, "user_id", userID)
+		ctx = context.WithValue(ctx, src.UserIDContextKey, userID)
 
 		return h(ctx, r)
 	}

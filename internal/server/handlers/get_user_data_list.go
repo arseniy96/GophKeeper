@@ -7,11 +7,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/arseniy96/GophKeeper/src"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
 func (s *Server) GetUserDataList(ctx context.Context, in *pb.UserDataListRequest) (*pb.UserDataListResponse, error) {
-	userID := ctx.Value("user_id").(int64)
+	userID := ctx.Value(src.UserIDContextKey).(int64)
 
 	userRecords, err := s.Storage.GetUserData(ctx, userID)
 	if err != nil {
