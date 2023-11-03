@@ -4,6 +4,8 @@ package gophkeeper;
 
 option go_package = "src/grpc/gophkeeper";
 
+// GophKeeper – сервис хранения и работы с приватными данными – такими, как:
+// пароли, карточные данные пользователя, файлы и любые текстовые данные
 service GophKeeper {
   rpc Ping(PingRequest) returns(PingResponse);
   rpc SignUp(SignUpRequest) returns(SignUpResponse);

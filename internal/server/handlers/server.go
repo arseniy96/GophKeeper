@@ -20,7 +20,7 @@ import (
 
 type Repository interface {
 	HealthCheck() error
-	CreateUser(ctx context.Context, login, password string) error
+	CreateUser(ctx context.Context, login, password string) (int64, error)
 	FindUserByLogin(ctx context.Context, login string) (*storage.User, error)
 	SaveUserData(ctx context.Context, userID int64, name, dataType string, data []byte) error
 	GetUserData(ctx context.Context, userID int64) ([]storage.ShortRecord, error)
@@ -51,7 +51,7 @@ func (s *Server) Start() error {
 	}
 
 	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		interceptors.AuthInterceptor(s.Logger),
+		interceptors.AuthInterceptor(s.Logger, s.Config.SecretKey),
 		logging.UnaryServerInterceptor(interceptors.LoggerInterceptor()),
 	))
 

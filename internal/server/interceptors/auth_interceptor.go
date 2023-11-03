@@ -14,7 +14,7 @@ import (
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
-func AuthInterceptor(l *logger.Logger) grpc.UnaryServerInterceptor {
+func AuthInterceptor(l *logger.Logger, secret string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, r interface{}, i *grpc.UnaryServerInfo, h grpc.UnaryHandler) (interface{}, error) {
 		if i.FullMethod == gophkeeper.GophKeeper_SignUp_FullMethodName ||
 			i.FullMethod == gophkeeper.GophKeeper_SignIn_FullMethodName ||
@@ -33,7 +33,7 @@ func AuthInterceptor(l *logger.Logger) grpc.UnaryServerInterceptor {
 			return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusForbidden))
 		}
 
-		userID, err := mycrypto.GetUserID(token, l)
+		userID, err := mycrypto.GetUserID(token, secret)
 		if err != nil {
 			l.Log.Debugf("invalid token: %v", token)
 			return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusForbidden))

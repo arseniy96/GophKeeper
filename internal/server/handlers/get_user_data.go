@@ -20,7 +20,7 @@ func (s *Server) GetUserData(ctx context.Context, in *pb.UserDataRequest) (*pb.U
 		if errors.Is(err, storage.ErrNowRows) {
 			return nil, status.Error(codes.NotFound, http.StatusText(http.StatusNoContent))
 		}
-		s.Logger.Log.Errorf("find data error: %v", err)
+		s.Logger.Log.Error(err)
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
 

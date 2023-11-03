@@ -15,7 +15,7 @@ func (s *Server) GetUserDataList(ctx context.Context, in *pb.UserDataListRequest
 
 	userRecords, err := s.Storage.GetUserData(ctx, userID)
 	if err != nil {
-		s.Logger.Log.Errorf("get user data error: %v", err)
+		s.Logger.Log.Error(err)
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
 

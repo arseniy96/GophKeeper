@@ -14,7 +14,7 @@ func (s *Server) SaveData(ctx context.Context, in *pb.SaveDataRequest) (*pb.Save
 	userID := ctx.Value("user_id").(int64)
 
 	if err := s.Storage.SaveUserData(ctx, userID, in.Name, in.DataType, in.Data); err != nil {
-		s.Logger.Log.Errorf("save data error: %v", err)
+		s.Logger.Log.Error(err)
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
 

@@ -20,7 +20,7 @@ func (s *Server) UpdateUserData(ctx context.Context, in *pb.UpdateUserDataReques
 		if errors.Is(err, storage.ErrNowRows) {
 			return nil, status.Error(codes.NotFound, http.StatusText(http.StatusNoContent))
 		}
-		s.Logger.Log.Errorf("find data error: %v", err)
+		s.Logger.Log.Error(err)
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
 
@@ -32,7 +32,7 @@ func (s *Server) UpdateUserData(ctx context.Context, in *pb.UpdateUserDataReques
 	record.Data = in.Data
 	err = s.Storage.UpdateUserRecord(ctx, record)
 	if err != nil {
-		s.Logger.Log.Errorf("update data error: %v", err)
+		s.Logger.Log.Error(err)
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
 	return &pb.UpdateUserDataResponse{

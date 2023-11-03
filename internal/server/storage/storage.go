@@ -22,24 +22,23 @@ const (
 	DefaultVersion = 1
 )
 
-var ErrConflict = errors.New(`already exists`)
-var ErrNowRows = errors.New(`missing data`)
-
 type Database struct {
 	DB *pgx.Conn
+	l  *logger.Logger
 }
 
 func NewStorage(dsn string, l *logger.Logger) (*Database, error) {
 	if err := runMigrations(dsn); err != nil {
-		return nil, fmt.Errorf("migrations failed with error: %w", err)
+		return nil, fmt.Errorf("%w: Init storage error: %v", ErrMigrationsFailed, err)
 	}
 
 	db, err := pgx.Connect(context.Background(), dsn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: Connect storage error: %v", ErrConnectionRefused, err)
 	}
 	database := &Database{
 		DB: db,
+		l:  l,
 	}
 	l.Log.Info("Database connection was created")
 
@@ -75,95 +74,61 @@ func (db *Database) Close() error {
 	return db.DB.Close(ctx)
 }
 
-func (db *Database) CreateUser(ctx context.Context, login, password string) error {
-	tx, err := db.DB.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = tx.Rollback(ctx)
-	}()
-
+func (db *Database) CreateUser(ctx context.Context, login, password string) (int64, error) {
 	var pgErr *pgconn.PgError
-	_, err = tx.Exec(ctx,
-		`INSERT INTO users(login, password) VALUES($1, $2)`,
-		login, password)
+	var id int64
+	err := db.DB.QueryRow(ctx,
+		`INSERT INTO users(login, password) VALUES($1, $2) RETURNING id`,
+		login, password).Scan(&id)
 	if err != nil {
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
-			return ErrConflict
+			return 0, ErrConflict
 		}
-		return err
+		return 0, fmt.Errorf("%w: Create user error: %v", ErrCreateUser, err)
 	}
 
-	return tx.Commit(ctx)
+	return id, nil
 }
 
 func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, error) {
-	tx, err := db.DB.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = tx.Rollback(ctx)
-	}()
-
 	var u User
-	err = tx.QueryRow(ctx,
+	err := db.DB.QueryRow(ctx,
 		`SELECT id, login, password FROM users WHERE login=$1 LIMIT(1)`,
 		login).Scan(&u.ID, &u.Login, &u.Password)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNowRows
 		}
-		return nil, err
-	}
-	err = tx.Commit(ctx)
-	if err != nil {
-		return nil, err
+
+		return nil, fmt.Errorf("%w: Find user error: %v", ErrFindUser, err)
 	}
 
 	return &u, nil
 }
 
 func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataType string, data []byte) error {
-	tx, err := db.DB.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = tx.Rollback(ctx)
-	}()
-
 	var pgErr *pgconn.PgError
 
-	_, err = tx.Exec(ctx,
-		`INSERT INTO user_records(name, data, data_type, user_id, version) VALUES($1, $2, $3, $4, $5)`,
-		name, data, dataType, userID, DefaultVersion)
+	_, err := db.DB.Exec(ctx,
+		`INSERT INTO user_records(name, data, data_type, user_id) VALUES($1, $2, $3, $4)`,
+		name, data, dataType, userID)
 
 	if err != nil {
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
 			return ErrConflict
 		}
-		return err
+		return fmt.Errorf("%w: Save user data error: %v", ErrSaveUserData, err)
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecord, error) {
-	tx, err := db.DB.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = tx.Rollback(ctx)
-	}()
-
-	rows, err := tx.Query(ctx,
+	rows, err := db.DB.Query(ctx,
 		`SELECT id, name, data_type, version from user_records where user_id=$1`,
 		userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: Request error: %v", ErrGetUserData, err)
 	}
 	defer rows.Close()
 
@@ -172,34 +137,21 @@ func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecor
 		var rec ShortRecord
 		err = rows.Scan(&rec.ID, &rec.Name, &rec.DataType, &rec.Version)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w: Scan error: %v", ErrGetUserData, err)
 		}
 		records = append(records, rec)
 	}
 	err = rows.Err()
 	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: Internal error: %v", ErrGetUserData, err)
 	}
 
 	return records, nil
 }
 
 func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Record, error) {
-	tx, err := db.DB.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = tx.Rollback(ctx)
-	}()
-
 	var rec Record
-	err = tx.QueryRow(ctx,
+	err := db.DB.QueryRow(ctx,
 		`SELECT id, name, data, data_type, version FROM user_records where id=$1 AND user_id=$2`,
 		id, userID).Scan(&rec.ID, &rec.Name, &rec.Data, &rec.DataType, &rec.Version)
 
@@ -207,29 +159,17 @@ func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Reco
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNowRows
 		}
-		return nil, err
-	}
-	err = tx.Commit(ctx)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: Find user record error: %v", ErrFindUserRecord, err)
 	}
 
 	return &rec, nil
 }
 
 func (db *Database) UpdateUserRecord(ctx context.Context, rec *Record) error {
-	tx, err := db.DB.Begin(ctx)
+	_, err := db.DB.Exec(ctx, `UPDATE user_records SET data=$1, version=version+1 WHERE id=$2`, rec.Data, rec.ID)
 	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = tx.Rollback(ctx)
-	}()
-
-	_, err = tx.Exec(ctx, `UPDATE user_records SET data=$1, version=version+1 WHERE id=$2`, rec.Data, rec.ID)
-	if err != nil {
-		return err
+		return fmt.Errorf("%w: Update user record error: %v", ErrUpdateUserRecord, err)
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }

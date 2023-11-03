@@ -1,20 +1,11 @@
 package mycrypto
 
 import (
-	"crypto/md5"
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v4"
-
-	"github.com/arseniy96/GophKeeper/src/logger"
-)
-
-const (
-	TokenSize = 16
-	SecretKey = "9Xa15pap24"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Claims struct {
@@ -26,53 +17,41 @@ var (
 	ErrInvalidToken = errors.New("invalid token")
 )
 
-func GenRandomToken() (string, error) {
-	b := make([]byte, TokenSize)
-	_, err := rand.Read(b)
+func HashFunc(src, secret string) (string, error) {
+	initString := fmt.Sprintf("%v:%v", src, secret)
+	hash, err := bcrypt.GenerateFromPassword([]byte(initString), bcrypt.DefaultCost)
 	if err != nil {
-		return "", fmt.Errorf("create random slise error: %w", err)
+		return "", fmt.Errorf("bcrypt error: %w", err)
 	}
 
-	return hex.EncodeToString(b), nil
+	return string(hash), nil
 }
 
-func HashFunc(src string) string {
-	initString := fmt.Sprintf("%v:%v", src, SecretKey)
-	return fmt.Sprintf("%x", md5.Sum([]byte(initString)))
-}
-
-func BuildJWT(userID int64) (string, error) {
+func BuildJWT(userID int64, secret string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{},
 		UserID:           userID,
 	})
 
-	tokenString, err := token.SignedString([]byte(SecretKey))
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
+	return token.SignedString([]byte(secret))
 }
 
-func GetUserID(tokenString string, l *logger.Logger) (int64, error) {
+func GetUserID(tokenString, secret string) (int64, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims,
 		func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
-			return []byte(SecretKey), nil
+			return []byte(secret), nil
 		})
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("jwt parse error: %v", err)
 	}
 
 	if !token.Valid {
-		l.Log.Error("token is not valid")
-		return 0, ErrInvalidToken
+		return 0, fmt.Errorf("%w: Get user id error", ErrInvalidToken)
 	}
 
-	l.Log.Info("token is valid")
 	return claims.UserID, nil
 }

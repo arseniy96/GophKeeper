@@ -12,7 +12,6 @@ var (
 
 func (c *Client) AppendDataToCache(model *models.UserData) {
 	c.Cache = append(c.Cache, clientCache{
-		token:  c.AuthToken,
 		dataID: model.ID,
 		data:   model,
 		actual: true,
@@ -60,15 +59,13 @@ func (c *Client) GetUserDataFromCache(model models.UserDataModel) (*models.UserD
 func (c *Client) GetUserDataListFromCache() []models.UserDataList {
 	records := make([]models.UserDataList, 0, len(c.Cache))
 	for _, cacheData := range c.Cache {
-		if c.AuthToken == cacheData.token {
-			m := models.UserDataList{
-				Name:     cacheData.data.Name,
-				DataType: cacheData.data.DataType,
-				ID:       cacheData.dataID,
-				Version:  cacheData.data.Version,
-			}
-			records = append(records, m)
+		m := models.UserDataList{
+			Name:     cacheData.data.Name,
+			DataType: cacheData.data.DataType,
+			ID:       cacheData.dataID,
+			Version:  cacheData.data.Version,
 		}
+		records = append(records, m)
 	}
 
 	return records
