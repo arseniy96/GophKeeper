@@ -1,16 +1,13 @@
 package application
 
 import (
-	"log"
-	"time"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"errors"
+	"fmt"
 
 	"github.com/arseniy96/GophKeeper/internal/client/config"
-	"github.com/arseniy96/GophKeeper/internal/client/interceptors"
+	"github.com/arseniy96/GophKeeper/internal/client/grpcclient"
 	"github.com/arseniy96/GophKeeper/internal/client/models"
-	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
+	"github.com/arseniy96/GophKeeper/internal/client/utils"
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
@@ -18,13 +15,25 @@ const (
 	DataIDSyncChanSize = 5
 )
 
+type printer interface {
+	Print(s string)
+	Scan(a ...interface{}) (int, error)
+}
+
+type grpcClient interface {
+	SignIn(model models.AuthModel) (models.AuthToken, error)
+	SignUp(model models.AuthModel) (models.AuthToken, error)
+	GetUserData(model models.UserDataModel) (*models.UserData, error)
+	GetUserDataList() ([]models.UserDataList, error)
+	SaveUserData(model *models.UserData) error
+	UpdateUserData(model *models.UserData) error
+}
+
 type Client struct {
-	ClientGRPC     pb.GophKeeperClient
-	Config         *config.Config
-	Logger         *logger.Logger
-	Cache          []clientCache
-	DataIDSyncChan chan int64
-	AuthToken      string
+	gRPCClient grpcClient
+	printer    printer
+	Config     *config.Config
+	Logger     *logger.Logger
 }
 
 type clientCache struct {
@@ -34,37 +43,78 @@ type clientCache struct {
 	actual bool
 }
 
-func NewClient(l *logger.Logger, c *config.Config) (*Client, func() error) {
-	client := &Client{
-		Config:         c,
-		Logger:         l,
-		DataIDSyncChan: make(chan int64, DataIDSyncChanSize),
-	}
-
-	conn, err := grpc.Dial(
-		c.Host,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(interceptors.AuthInterceptor(client)),
-	)
+func NewClient(l *logger.Logger, c *config.Config) (*Client, error) {
+	gRPCClient, err := grpcclient.NewGRPCClient(c)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	gRPCClient := pb.NewGophKeeperClient(conn)
-	client.ClientGRPC = gRPCClient
 
-	go client.DataSyncWorker()
-
-	return client, conn.Close
+	//go client.DataSyncWorker() TODO
+	return &Client{
+		gRPCClient: gRPCClient,
+		printer:    &utils.Printer{},
+		Config:     c,
+		Logger:     l,
+	}, nil
 }
 
-func (c *Client) UpdateAuthToken(token string) {
-	c.AuthToken = token
+func (c *Client) Start() error {
+	c.printer.Print("Hello! I'm GophKeeper. I can save your private information.")
+
+	if err := c.userAuth(); err != nil {
+		c.Logger.Log.Error(err)
+		return err
+	}
+	return c.startSession()
 }
 
-func (c *Client) GetAuthToken() string {
-	return c.AuthToken
-}
+func (c *Client) startSession() error {
+	for {
+		c.printer.Print("Choose command (enter number of command)")
+		fmt.Println("1. Get all saved data")
+		fmt.Println("2. Get some saved data")
+		fmt.Println("3. Save some data")
+		fmt.Println("4. Edit saved data")
 
-func (c *Client) GetTimeout() time.Duration {
-	return time.Duration(c.Config.ConnectionTimeout) * time.Second
+		var commandNumber int
+		_, err := fmt.Scanln(&commandNumber)
+		if err != nil {
+			return err
+		}
+
+		switch commandNumber {
+		case getUserDataList:
+			err := c.GetUserDataList()
+			if err != nil {
+				if errors.Is(err, ErrNoData) {
+					//nolint:goconst,nolintlint // it's print
+					c.printer.Print("You have no saved data")
+					continue
+				}
+				c.Logger.Log.Error(err)
+				continue
+			}
+		case getUserData:
+			err := c.GetUserData()
+			if err != nil {
+				c.Logger.Log.Error(err)
+				continue
+			}
+		case saveUserData:
+			err := c.SaveData()
+			if err != nil {
+				c.Logger.Log.Error(err)
+				continue
+			}
+		case editUserData:
+			err := c.EditData()
+			if err != nil {
+				c.Logger.Log.Error(err)
+				continue
+			}
+		default:
+			fmt.Println("Unknown command")
+		}
+		fmt.Printf("\n====================\n\n")
+	}
 }

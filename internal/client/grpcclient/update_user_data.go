@@ -1,14 +1,15 @@
-package application
+package grpcclient
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/arseniy96/GophKeeper/internal/client/models"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
 func (c *Client) UpdateUserData(model *models.UserData) error {
-	ctx, cancel := context.WithTimeout(context.Background(), c.GetTimeout())
+	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()
 
 	req := &pb.UpdateUserDataRequest{
@@ -16,10 +17,9 @@ func (c *Client) UpdateUserData(model *models.UserData) error {
 		Data:    model.Data,
 		Version: model.Version,
 	}
-	_, err := c.ClientGRPC.UpdateUserData(ctx, req)
+	_, err := c.gRPCClient.UpdateUserData(ctx, req)
 	if err != nil {
-		c.Logger.Log.Errorf("update user data error: %v", err)
-		return err
+		return fmt.Errorf("%w: gRPC UpdataUserData error: %v", ErrRequestErr, err)
 	}
 
 	return nil

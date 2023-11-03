@@ -17,14 +17,17 @@ var (
 	ErrInvalidToken = errors.New("invalid token")
 )
 
-func HashFunc(src, secret string) (string, error) {
-	initString := fmt.Sprintf("%v:%v", src, secret)
-	hash, err := bcrypt.GenerateFromPassword([]byte(initString), bcrypt.DefaultCost)
+func HashFunc(src string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(src), bcrypt.DefaultCost)
 	if err != nil {
 		return "", fmt.Errorf("bcrypt error: %w", err)
 	}
 
 	return string(hash), nil
+}
+
+func CompareHash(src, hash string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(src))
 }
 
 func BuildJWT(userID int64, secret string) (string, error) {

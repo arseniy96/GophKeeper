@@ -1,4 +1,4 @@
-package commands
+package application
 
 import (
 	"fmt"
@@ -7,25 +7,25 @@ import (
 	"github.com/arseniy96/GophKeeper/internal/client/utils"
 )
 
-func UserAuth(c Client) (string, error) {
+func (c *Client) userAuth() error {
 	var ans string
 	utils.SlowPrint("Do you have an account? (y/n)")
 	_, err := fmt.Scanln(&ans)
 	if err != nil {
-		return "", err
+		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 
 	switch ans {
 	case "y":
-		return userSignIn(c)
+		return c.userSignIn()
 	case "n":
-		return userSignUp(c)
+		return c.userSignUp()
 	default:
-		return UserAuth(c)
+		return c.userAuth()
 	}
 }
 
-func userSignIn(c Client) (string, error) {
+func (c *Client) userSignIn() error {
 	var (
 		login, password string
 		err             error
@@ -35,26 +35,27 @@ func userSignIn(c Client) (string, error) {
 	fmt.Print(loginInput)
 	_, err = fmt.Scan(&login)
 	if err != nil {
-		return "", err
+		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 	fmt.Print(passwordInput)
 	_, err = fmt.Scan(&password)
 	if err != nil {
-		return "", err
+		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 
-	token, err := c.SignIn(models.AuthModel{
+	token, err := c.gRPCClient.SignIn(models.AuthModel{
 		Login:    login,
 		Password: password,
 	})
 	if err != nil {
-		return "", ErrUserNotAuthorized
+		return fmt.Errorf("%w: SignIn error: %v", ErrUserNotAuthorized, err)
 	}
+	c.Logger.Log.Debugf("AuthToken: %v", string(token))
 
-	return string(token), nil
+	return nil
 }
 
-func userSignUp(c Client) (string, error) {
+func (c *Client) userSignUp() error {
 	var (
 		login, password string
 		err             error
@@ -64,21 +65,22 @@ func userSignUp(c Client) (string, error) {
 	fmt.Print(loginInput)
 	_, err = fmt.Scan(&login)
 	if err != nil {
-		return "", err
+		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 	fmt.Print(passwordInput)
 	_, err = fmt.Scan(&password)
 	if err != nil {
-		return "", err
+		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 
-	token, err := c.SignUp(models.AuthModel{
+	token, err := c.gRPCClient.SignUp(models.AuthModel{
 		Login:    login,
 		Password: password,
 	})
 	if err != nil {
-		return "", ErrUserNotAuthorized
+		return fmt.Errorf("%w: SignUp error: %v", ErrUserNotAuthorized, err)
 	}
+	c.Logger.Log.Debugf("AuthToken: %v", string(token))
 
-	return string(token), nil
+	return nil
 }

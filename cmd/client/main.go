@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/arseniy96/GophKeeper/internal/client/application"
-	"github.com/arseniy96/GophKeeper/internal/client/commands"
 	"github.com/arseniy96/GophKeeper/internal/client/config"
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
@@ -25,10 +24,10 @@ func run() error {
 		return err
 	}
 
-	client, cancel := application.NewClient(l, settings)
-	defer func() {
-		_ = cancel()
-	}()
+	client, err := application.NewClient(l, settings)
+	if err != nil {
+		return err
+	}
 
-	return commands.Start(client)
+	return client.Start()
 }

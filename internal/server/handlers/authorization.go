@@ -16,7 +16,7 @@ import (
 func (s *Server) SignUp(ctx context.Context, in *pb.SignUpRequest) (*pb.SignUpResponse, error) {
 	login := in.Login
 	pass := in.Password
-	encryptedPass, err := mycrypto.HashFunc(pass, s.Config.SecretKey)
+	encryptedPass, err := mycrypto.HashFunc(pass)
 	if err != nil {
 		s.Logger.Log.Error(err)
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
@@ -55,13 +55,8 @@ func (s *Server) SignIn(ctx context.Context, in *pb.SignInRequest) (*pb.SignInRe
 		s.Logger.Log.Error(err)
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
-	encryptedPass, err := mycrypto.HashFunc(pass, s.Config.SecretKey)
-	if err != nil {
-		s.Logger.Log.Error(err)
-		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
-	}
 
-	if user.Password != encryptedPass {
+	if err := mycrypto.CompareHash(pass, user.Password); err != nil {
 		s.Logger.Log.Debugf("authorization failed, login: %v", login)
 		return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusUnauthorized))
 	}
