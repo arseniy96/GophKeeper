@@ -15,7 +15,7 @@ func (c *Client) GetUserData(model models.UserDataModel) (*models.UserData, erro
 	req := &pb.UserDataRequest{Id: model.ID}
 	res, err := c.gRPCClient.GetUserData(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("%w: gRPC GetUserData error: %v", ErrRequestErr, err)
+		return nil, fmt.Errorf("%w: gRPC GetUserData error: %w", ErrRequest, err)
 	}
 
 	return &models.UserData{

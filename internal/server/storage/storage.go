@@ -29,12 +29,12 @@ type Database struct {
 
 func NewStorage(dsn string, l *logger.Logger) (*Database, error) {
 	if err := runMigrations(dsn); err != nil {
-		return nil, fmt.Errorf("%w: Init storage error: %v", ErrMigrationsFailed, err)
+		return nil, fmt.Errorf("%w: Init storage error: %w", ErrMigrationsFailed, err)
 	}
 
 	db, err := pgx.Connect(context.Background(), dsn)
 	if err != nil {
-		return nil, fmt.Errorf("%w: Connect storage error: %v", ErrConnectionRefused, err)
+		return nil, fmt.Errorf("%w: Connect storage error: %w", ErrConnectionRefused, err)
 	}
 	database := &Database{
 		DB: db,
@@ -84,7 +84,7 @@ func (db *Database) CreateUser(ctx context.Context, login, password string) (int
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
 			return 0, ErrConflict
 		}
-		return 0, fmt.Errorf("%w: Create user error: %v", ErrCreateUser, err)
+		return 0, fmt.Errorf("%w: Create user error: %w", ErrCreateUser, err)
 	}
 
 	return id, nil
@@ -100,7 +100,7 @@ func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, e
 			return nil, ErrNowRows
 		}
 
-		return nil, fmt.Errorf("%w: Find user error: %v", ErrFindUser, err)
+		return nil, fmt.Errorf("%w: Find user error: %w", ErrFindUser, err)
 	}
 
 	return &u, nil
@@ -117,7 +117,7 @@ func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataTy
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
 			return ErrConflict
 		}
-		return fmt.Errorf("%w: Save user data error: %v", ErrSaveUserData, err)
+		return fmt.Errorf("%w: Save user data error: %w", ErrSaveUserData, err)
 	}
 
 	return nil
@@ -128,7 +128,7 @@ func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecor
 		`SELECT id, name, data_type, version from user_records where user_id=$1`,
 		userID)
 	if err != nil {
-		return nil, fmt.Errorf("%w: Request error: %v", ErrGetUserData, err)
+		return nil, fmt.Errorf("%w: Request error: %w", ErrGetUserData, err)
 	}
 	defer rows.Close()
 
@@ -137,13 +137,13 @@ func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecor
 		var rec ShortRecord
 		err = rows.Scan(&rec.ID, &rec.Name, &rec.DataType, &rec.Version)
 		if err != nil {
-			return nil, fmt.Errorf("%w: Scan error: %v", ErrGetUserData, err)
+			return nil, fmt.Errorf("%w: Scan error: %w", ErrGetUserData, err)
 		}
 		records = append(records, rec)
 	}
 	err = rows.Err()
 	if err != nil {
-		return nil, fmt.Errorf("%w: Internal error: %v", ErrGetUserData, err)
+		return nil, fmt.Errorf("%w: Internal error: %w", ErrGetUserData, err)
 	}
 
 	return records, nil
@@ -159,7 +159,7 @@ func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Reco
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNowRows
 		}
-		return nil, fmt.Errorf("%w: Find user record error: %v", ErrFindUserRecord, err)
+		return nil, fmt.Errorf("%w: Find user record error: %w", ErrFindUserRecord, err)
 	}
 
 	return &rec, nil
@@ -168,7 +168,7 @@ func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Reco
 func (db *Database) UpdateUserRecord(ctx context.Context, rec *Record) error {
 	_, err := db.DB.Exec(ctx, `UPDATE user_records SET data=$1, version=version+1 WHERE id=$2`, rec.Data, rec.ID)
 	if err != nil {
-		return fmt.Errorf("%w: Update user record error: %v", ErrUpdateUserRecord, err)
+		return fmt.Errorf("%w: Update user record error: %w", ErrUpdateUserRecord, err)
 	}
 
 	return nil

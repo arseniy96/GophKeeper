@@ -15,7 +15,7 @@ func (c *Client) GetUserDataList() ([]models.UserDataList, error) {
 	req := &pb.UserDataListRequest{}
 	res, err := c.gRPCClient.GetUserDataList(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("%w: gRPC GetUserDataList error: %v", ErrRequestErr, err)
+		return nil, fmt.Errorf("%w: gRPC GetUserDataList error: %w", ErrRequest, err)
 	}
 
 	records := make([]models.UserDataList, 0, len(res.Data))
@@ -28,7 +28,6 @@ func (c *Client) GetUserDataList() ([]models.UserDataList, error) {
 		}
 		records = append(records, rec)
 	}
-	//c.SyncCache(records) //TODO
 
 	return records, nil
 }

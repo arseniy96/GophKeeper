@@ -11,8 +11,8 @@ type Cache struct {
 }
 
 type cacheData struct {
-	dataID int64
 	data   *models.UserData
+	dataID int64
 }
 
 var (

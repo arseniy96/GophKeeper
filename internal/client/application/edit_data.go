@@ -22,7 +22,7 @@ func (c *Client) EditData() error {
 	var dataID int64
 	_, err = c.printer.Scan(&dataID)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 	}
 
 	data, err := c.gRPCClient.GetUserData(models.UserDataModel{ID: dataID})

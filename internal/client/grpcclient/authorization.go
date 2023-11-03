@@ -18,7 +18,7 @@ func (c *Client) SignIn(model models.AuthModel) (models.AuthToken, error) {
 	}
 	res, err := c.gRPCClient.SignIn(ctx, req)
 	if err != nil {
-		return "", fmt.Errorf("%w: gRPC SignIn error: %v", ErrRequestErr, err)
+		return "", fmt.Errorf("%w: gRPC SignIn error: %w", ErrRequest, err)
 	}
 	c.authToken = res.Token
 
@@ -35,7 +35,7 @@ func (c *Client) SignUp(model models.AuthModel) (models.AuthToken, error) {
 	}
 	res, err := c.gRPCClient.SignUp(ctx, req)
 	if err != nil {
-		return "", fmt.Errorf("%w: gRPC SignUp error: %v", ErrRequestErr, err)
+		return "", fmt.Errorf("%w: gRPC SignUp error: %w", ErrRequest, err)
 	}
 	c.authToken = res.Token
 

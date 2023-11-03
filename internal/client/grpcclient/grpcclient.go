@@ -16,11 +16,11 @@ import (
 type Client struct {
 	gRPCClient pb.GophKeeperClient
 	config     *config.Config
-	timeout    time.Duration
 	authToken  string
+	timeout    time.Duration
 }
 
-var ErrRequestErr = errors.New(`request error`)
+var ErrRequest = errors.New(`request error`)
 
 func NewGRPCClient(c *config.Config) (*Client, error) {
 	client := &Client{

@@ -49,7 +49,7 @@ func GetUserID(tokenString, secret string) (int64, error) {
 			return []byte(secret), nil
 		})
 	if err != nil {
-		return 0, fmt.Errorf("jwt parse error: %v", err)
+		return 0, fmt.Errorf("jwt parse error: %w", err)
 	}
 
 	if !token.Valid {

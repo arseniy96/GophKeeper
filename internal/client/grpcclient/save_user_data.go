@@ -19,7 +19,7 @@ func (c *Client) SaveUserData(model *models.UserData) error {
 	}
 	_, err := c.gRPCClient.SaveData(ctx, req)
 	if err != nil {
-		return fmt.Errorf("%w: gRPC SaveUserData error: %v", ErrRequestErr, err)
+		return fmt.Errorf("%w: gRPC SaveUserData error: %w", ErrRequest, err)
 	}
 
 	return nil

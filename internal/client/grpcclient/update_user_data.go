@@ -19,7 +19,7 @@ func (c *Client) UpdateUserData(model *models.UserData) error {
 	}
 	_, err := c.gRPCClient.UpdateUserData(ctx, req)
 	if err != nil {
-		return fmt.Errorf("%w: gRPC UpdataUserData error: %v", ErrRequestErr, err)
+		return fmt.Errorf("%w: gRPC UpdataUserData error: %w", ErrRequest, err)
 	}
 
 	return nil

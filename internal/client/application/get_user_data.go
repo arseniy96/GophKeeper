@@ -28,7 +28,7 @@ func (c *Client) GetUserData() error {
 	)
 	_, err = c.printer.Scan(&dataID)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 	}
 
 	m := models.UserDataModel{ID: dataID}
@@ -63,7 +63,7 @@ func printData(data *models.UserData) error {
 		//nolint:goconst,nolintlint // it's format
 		pretty, err = json.MarshalIndent(passStruct, "", "  ")
 		if err != nil {
-			return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+			return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 		}
 	case cardDataType:
 		cardStruct := &CardData{}
@@ -74,7 +74,7 @@ func printData(data *models.UserData) error {
 		//nolint:goconst,nolintlint // it's format
 		pretty, err = json.MarshalIndent(cardStruct, "", "  ")
 		if err != nil {
-			return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+			return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 		}
 	case fileDataType:
 		fileStruct := &FileData{}
@@ -85,7 +85,7 @@ func printData(data *models.UserData) error {
 		//nolint:goconst,nolintlint // it's format
 		pretty, err = json.MarshalIndent(fileStruct, "", "  ")
 		if err != nil {
-			return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+			return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 		}
 	case textDataType:
 		textStruct := &TextData{}
@@ -96,7 +96,7 @@ func printData(data *models.UserData) error {
 		//nolint:goconst,nolintlint // it's format
 		pretty, err = json.MarshalIndent(textStruct, "", "  ")
 		if err != nil {
-			return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+			return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 		}
 	default:
 		return nil

@@ -11,7 +11,7 @@ func (c *Client) userAuth() error {
 	c.printer.Print("Do you have an account? (y/n)")
 	_, err := c.printer.Scan(&ans)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 	}
 
 	switch ans {
@@ -34,22 +34,21 @@ func (c *Client) userSignIn() error {
 	fmt.Print(loginInput)
 	_, err = c.printer.Scan(&login)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 	}
 	fmt.Print(passwordInput)
 	_, err = c.printer.Scan(&password)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 	}
 
-	token, err := c.gRPCClient.SignIn(models.AuthModel{
+	_, err = c.gRPCClient.SignIn(models.AuthModel{
 		Login:    login,
 		Password: password,
 	})
 	if err != nil {
-		return fmt.Errorf("%w: SignIn error: %v", ErrUserNotAuthorized, err)
+		return fmt.Errorf("%w: SignIn error: %w", ErrUserNotAuthorized, err)
 	}
-	c.Logger.Log.Debugf("AuthToken: %v", string(token))
 
 	return nil
 }
@@ -64,22 +63,21 @@ func (c *Client) userSignUp() error {
 	fmt.Print(loginInput)
 	_, err = c.printer.Scan(&login)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 	}
 	fmt.Print(passwordInput)
 	_, err = c.printer.Scan(&password)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
+		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
 	}
 
-	token, err := c.gRPCClient.SignUp(models.AuthModel{
+	_, err = c.gRPCClient.SignUp(models.AuthModel{
 		Login:    login,
 		Password: password,
 	})
 	if err != nil {
-		return fmt.Errorf("%w: SignUp error: %v", ErrUserNotAuthorized, err)
+		return fmt.Errorf("%w: SignUp error: %w", ErrUserNotAuthorized, err)
 	}
-	c.Logger.Log.Debugf("AuthToken: %v", string(token))
 
 	return nil
 }
