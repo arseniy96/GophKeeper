@@ -21,7 +21,6 @@ func (c *Client) SaveUserData(model *models.UserData) error {
 	if err != nil {
 		return fmt.Errorf("%w: gRPC SaveUserData error: %v", ErrRequestErr, err)
 	}
-	//c.AppendDataToCache(model) //TODO
 
 	return nil
 }

@@ -4,13 +4,12 @@ import (
 	"fmt"
 
 	"github.com/arseniy96/GophKeeper/internal/client/models"
-	"github.com/arseniy96/GophKeeper/internal/client/utils"
 )
 
 func (c *Client) userAuth() error {
 	var ans string
-	utils.SlowPrint("Do you have an account? (y/n)")
-	_, err := fmt.Scanln(&ans)
+	c.printer.Print("Do you have an account? (y/n)")
+	_, err := c.printer.Scan(&ans)
 	if err != nil {
 		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
@@ -31,14 +30,14 @@ func (c *Client) userSignIn() error {
 		err             error
 	)
 
-	utils.SlowPrint("Please enter your login and password.")
+	c.printer.Print("Please enter your login and password.")
 	fmt.Print(loginInput)
-	_, err = fmt.Scan(&login)
+	_, err = c.printer.Scan(&login)
 	if err != nil {
 		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 	fmt.Print(passwordInput)
-	_, err = fmt.Scan(&password)
+	_, err = c.printer.Scan(&password)
 	if err != nil {
 		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
@@ -61,14 +60,14 @@ func (c *Client) userSignUp() error {
 		err             error
 	)
 
-	utils.SlowPrint("Please enter login and password.")
+	c.printer.Print("Please enter login and password.")
 	fmt.Print(loginInput)
-	_, err = fmt.Scan(&login)
+	_, err = c.printer.Scan(&login)
 	if err != nil {
 		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 	fmt.Print(passwordInput)
-	_, err = fmt.Scan(&password)
+	_, err = c.printer.Scan(&password)
 	if err != nil {
 		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}

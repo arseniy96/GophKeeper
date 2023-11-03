@@ -31,18 +31,15 @@ func (c *Client) GetUserData() error {
 		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 
-	// TODO: cache
-	//data, err = c.GetUserDataFromCache(models.UserDataModel{ID: dataID})
-	//if err != nil {
-	//	data, err = c.GetUserData(models.UserDataModel{ID: dataID})
-	//	if err != nil {
-	//		fmt.Printf("Something went wrong, error: %v", err)
-	//		return nil
-	//	}
-	//}
-	data, err = c.gRPCClient.GetUserData(models.UserDataModel{ID: dataID})
+	m := models.UserDataModel{ID: dataID}
+	data, err = c.cache.GetUserData(m) // сначала пытаемся достать из кеша
 	if err != nil {
-		return err
+		c.Logger.Log.Warnf("get data from cache error: %w", err)
+		data, err = c.gRPCClient.GetUserData(m) // если в кеше нет, идём на сервер
+		if err != nil {
+			return err
+		}
+		c.cache.Append(data) // складываем в кеш
 	}
 
 	err = printData(data)

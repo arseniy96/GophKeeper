@@ -9,7 +9,6 @@ import (
 	"github.com/mailru/easyjson"
 
 	"github.com/arseniy96/GophKeeper/internal/client/models"
-	"github.com/arseniy96/GophKeeper/internal/client/utils"
 )
 
 var dataTypes = [4]string{passwordDataType, cardDataType, fileDataType, textDataType}
@@ -28,13 +27,13 @@ func (c *Client) SaveData() error {
 		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 
-	model, err := buildData(dti)
+	model, err := buildData(dti, c.printer)
 	if err != nil {
 		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
 
 	c.printer.Print("What name to save the data with?")
-	_, err = fmt.Scanln(&name)
+	_, err = c.printer.Scan(&name)
 	if err != nil {
 		return fmt.Errorf("%w: something went wrong: %v", ErrInternal, err)
 	}
@@ -44,42 +43,43 @@ func (c *Client) SaveData() error {
 	if err != nil {
 		return err
 	}
+	c.cache.Append(model)
 
 	c.printer.Print("Saved!")
 
 	return nil
 }
 
-func buildData(dti int) (*models.UserData, error) {
+func buildData(dti int, p printer) (*models.UserData, error) {
 	switch dti {
 	case passwordData:
-		return buildPassword()
+		return buildPassword(p)
 	case cardData:
-		return buildCardData()
+		return buildCardData(p)
 	case fileData:
-		return buildFileData()
+		return buildFileData(p)
 	case textData:
-		return buildTextData()
+		return buildTextData(p)
 	default:
 		return nil, ErrUnknownDataType
 	}
 }
 
-func buildPassword() (*models.UserData, error) {
-	utils.SlowPrint("Please enter password data")
+func buildPassword(p printer) (*models.UserData, error) {
+	p.Print("Please enter password data")
 	pass := &PasswordData{}
 	fmt.Print(siteInput)
-	_, err := fmt.Scanln(&pass.Site)
+	_, err := p.Scan(&pass.Site)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Print(loginInput)
-	_, err = fmt.Scanln(&pass.Login)
+	_, err = p.Scan(&pass.Login)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Print(passwordInput)
-	_, err = fmt.Scanln(&pass.Password)
+	_, err = p.Scan(&pass.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -95,21 +95,21 @@ func buildPassword() (*models.UserData, error) {
 	}, nil
 }
 
-func buildCardData() (*models.UserData, error) {
-	utils.SlowPrint("Please enter card details")
+func buildCardData(p printer) (*models.UserData, error) {
+	p.Print("Please enter card details")
 	card := &CardData{}
 	fmt.Print(cardNumberInput)
-	_, err := fmt.Scanln(&card.Number)
+	_, err := p.Scan(&card.Number)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Print(cardExpDateInput)
-	_, err = fmt.Scanln(&card.ExpDate)
+	_, err = p.Scan(&card.ExpDate)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Print(cardHolderInput)
-	_, err = fmt.Scanln(&card.CardHolder)
+	_, err = p.Scan(&card.CardHolder)
 	if err != nil {
 		return nil, err
 	}
@@ -125,10 +125,10 @@ func buildCardData() (*models.UserData, error) {
 	}, nil
 }
 
-func buildTextData() (*models.UserData, error) {
+func buildTextData(p printer) (*models.UserData, error) {
 	text := &TextData{}
-	utils.SlowPrint("Please enter text")
-	_, err := fmt.Scan(&text.Text)
+	p.Print("Please enter text")
+	_, err := p.Scan(&text.Text)
 	if err != nil {
 		return nil, err
 	}
@@ -144,10 +144,10 @@ func buildTextData() (*models.UserData, error) {
 	}, nil
 }
 
-func buildFileData() (*models.UserData, error) {
+func buildFileData(p printer) (*models.UserData, error) {
 	file := &FileData{}
-	utils.SlowPrint("Please enter path to file")
-	_, err := fmt.Scan(&file.Path)
+	p.Print("Please enter path to file")
+	_, err := p.Scan(&file.Path)
 	if err != nil {
 		return nil, err
 	}
