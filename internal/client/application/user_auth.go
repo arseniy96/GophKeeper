@@ -6,7 +6,8 @@ import (
 	"github.com/arseniy96/GophKeeper/internal/client/models"
 )
 
-func (c *Client) userAuth() error {
+// UserAuth – функция авторизации пользователя.
+func (c *Client) UserAuth() error {
 	var ans string
 	c.printer.Print("Do you have an account? (y/n)")
 	_, err := c.printer.Scan(&ans)
@@ -20,7 +21,7 @@ func (c *Client) userAuth() error {
 	case "n":
 		return c.userSignUp()
 	default:
-		return c.userAuth()
+		return c.UserAuth()
 	}
 }
 

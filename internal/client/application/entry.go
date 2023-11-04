@@ -5,10 +5,17 @@ import (
 	"fmt"
 )
 
+// Start – функция для начала сценария.
+// Сначала пользователь должен авторизоваться.
+// Затем пользователю предлагают выбрать одну из команд:
+//  1. Получение всех сохранённых данных (мета-данных).
+//  2. Получение данных.
+//  3. Сохранение данных.
+//  4. Редактирование данных.
 func (c *Client) Start() error {
 	c.printer.Print("Hello! I'm GophKeeper. I can save your private information.")
 
-	if err := c.userAuth(); err != nil {
+	if err := c.UserAuth(); err != nil {
 		c.Logger.Log.Error(err)
 		return err
 	}

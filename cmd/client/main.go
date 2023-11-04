@@ -8,6 +8,11 @@ import (
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
+// @Title GophKeeper Client.
+// @Description Клиент для работы с приватными данными. Поддерживает сохранение, получение и редактирование.
+// @Version 1.0.
+// @Contact.email arsenzhar@yandex.ru.
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)

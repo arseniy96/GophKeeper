@@ -13,6 +13,7 @@ import (
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
+// UpdateUserData – метод обновления данных пользователя.
 func (s *Server) UpdateUserData(ctx context.Context, in *pb.UpdateUserDataRequest) (*pb.UpdateUserDataResponse, error) {
 	userID := ctx.Value(src.UserIDContextKey).(int64)
 

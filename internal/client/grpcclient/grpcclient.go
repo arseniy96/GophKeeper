@@ -13,6 +13,7 @@ import (
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
+// Client – Объект gRPC клиента для общения с сервером.
 type Client struct {
 	gRPCClient pb.GophKeeperClient
 	config     *config.Config
@@ -22,6 +23,7 @@ type Client struct {
 
 var ErrRequest = errors.New(`request error`)
 
+// NewGRPCClient – функция инициализации gRPC клиента.
 func NewGRPCClient(c *config.Config) (*Client, error) {
 	client := &Client{
 		config:  c,
@@ -42,6 +44,7 @@ func NewGRPCClient(c *config.Config) (*Client, error) {
 	return client, nil
 }
 
+// GetAuthToken – метод получения AuthToken пользователя.
 func (c *Client) GetAuthToken() string {
 	return c.authToken
 }

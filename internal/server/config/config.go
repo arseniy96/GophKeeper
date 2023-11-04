@@ -8,14 +8,19 @@ import (
 	"github.com/caarlos0/env"
 )
 
+// Config – объект конфигурации сервера.
 type Config struct {
-	DatabaseDSN       string `json:"database_dsn" env:"DATABASE_DSN"`
-	Host              string `json:"host" env:"HOST"`
-	LogLevel          string `json:"log_level" env:"LOG_LEVEL"`
-	SecretKey         string `json:"secret_key"`
-	ConnectionTimeout int64  `json:"connection_timeout" env:"CONNECTION_TIMEOUT"`
+	// DatabaseDSN – dsn для подключения к БД.
+	DatabaseDSN string `json:"database_dsn" env:"DATABASE_DSN"`
+	// Host – адрес сервера.
+	Host string `json:"host" env:"HOST"`
+	// LogLevel – уровень логгирования.
+	LogLevel string `json:"log_level" env:"LOG_LEVEL"`
+	// SecretKey – ключ шифрования.
+	SecretKey string `json:"secret_key"`
 }
 
+// Initialize – функция инициализации конфига.
 func Initialize() (*Config, error) {
 	configFile, err := os.Open("./config/server/settings/production.json")
 	if err != nil {

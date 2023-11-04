@@ -8,6 +8,7 @@ import (
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
+// SaveUserData – метод сохранения данных пользователя на сервер.
 func (c *Client) SaveUserData(model *models.UserData) error {
 	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()

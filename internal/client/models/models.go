@@ -1,27 +1,44 @@
 package models
 
+// AuthModel – модель данных для запроса регистрации или логина.
 type AuthModel struct {
-	Login    string
+	// Login – login.
+	Login string
+	// Password – password.
 	Password string
 }
 
+// AuthToken – токен авторизации.
 type AuthToken string
 
+// UserDataList – модель мета-данных пользователя.
 type UserDataList struct {
-	Name     string
+	// Name – название данных.
+	Name string
+	// DataType – тип данных.
 	DataType string
-	ID       int64
-	Version  int64
+	// ID – идентификатор.
+	ID int64
+	// Version – версия данных.
+	Version int64
 }
 
+// UserDataModel – модель для получения данных.
 type UserDataModel struct {
+	// ID – идентификатор.
 	ID int64
 }
 
+// UserData – модель данных пользователя.
 type UserData struct {
-	Name     string
+	// Name – название данных.
+	Name string
+	// DataType – тип данных.
 	DataType string
-	Data     []byte
-	ID       int64
-	Version  int64
+	// Data – бинарные данные пользователя.
+	Data []byte
+	// ID – идентификатор.
+	ID int64
+	// Version – версия данных.
+	Version int64
 }

@@ -8,6 +8,7 @@ import (
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
+// GetUserDataList – метод получения всех сохранённых данных (мета-данных) пользователя с сервера.
 func (c *Client) GetUserDataList() ([]models.UserDataList, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()

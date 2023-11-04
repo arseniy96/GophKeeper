@@ -11,6 +11,7 @@ import (
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
+// Ping – метод для проверки работоспособности сервера.
 func (s *Server) Ping(ctx context.Context, in *pb.PingRequest) (*pb.PingResponse, error) {
 	time.Sleep(5 * time.Second) //nolint:gomnd // for grasfull shutdown test
 	err := s.Storage.HealthCheck()

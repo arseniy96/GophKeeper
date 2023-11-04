@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// GetUserDataList – получение всех сохранённых данных (мета-данных) пользователя.
 func (c *Client) GetUserDataList() error {
 	records, err := c.gRPCClient.GetUserDataList()
 	if err != nil { // что-то с сервером

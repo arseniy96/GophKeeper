@@ -15,6 +15,7 @@ import (
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
+// AuthInterceptor – интерсептор сервера для проверки авторизации пользователя.
 func AuthInterceptor(l *logger.Logger, secret string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, r interface{}, i *grpc.UnaryServerInfo, h grpc.UnaryHandler) (interface{}, error) {
 		if i.FullMethod == gophkeeper.GophKeeper_SignUp_FullMethodName ||

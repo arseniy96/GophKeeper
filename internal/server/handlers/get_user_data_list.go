@@ -11,6 +11,7 @@ import (
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
+// GetUserDataList – метод получения всех сохранённых мета-данных пользователя.
 func (s *Server) GetUserDataList(ctx context.Context, in *pb.UserDataListRequest) (*pb.UserDataListResponse, error) {
 	userID := ctx.Value(src.UserIDContextKey).(int64)
 

@@ -1,25 +1,43 @@
 package storage
 
+// User – модель пользователя.
 type User struct {
-	Login    string
+	// Login – login.
+	Login string
+	// Password – пароль.
 	Password string
-	Token    string
-	ID       int64
+	// Token – токен аутентификации.
+	Token string
+	// ID – идентификатор пользователя.
+	ID int64
 }
 
+// ShortRecord – модель для метаданных пользователя.
 type ShortRecord struct {
-	Name      string
-	DataType  string
+	// Name – название для данных.
+	Name string
+	// DataType – тип данных.
+	DataType string
+	// CreatedAt – дата создания.
 	CreatedAt string
-	ID        int64
-	Version   int64
+	// ID – идентификатор данных.
+	ID int64
+	// Version – версия данных.
+	Version int64
 }
 
+// Record – модель данных пользователя.
 type Record struct {
-	Name      string
-	DataType  string
+	// Name – название для данных.
+	Name string
+	// DataType – тип данных.
+	DataType string
+	// CreatedAt – дата создания.
 	CreatedAt string
-	Data      []byte
-	Version   int64
-	ID        int64
+	// Data – данные пользователя в байтах.
+	Data []byte
+	// ID – идентификатор данных.
+	ID int64
+	// Version – версия данных.
+	Version int64
 }

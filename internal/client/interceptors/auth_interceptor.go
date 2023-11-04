@@ -11,6 +11,7 @@ type client interface {
 	GetAuthToken() string
 }
 
+// AuthInterceptor – интерсептор клиента, которые добавляет auth_token клиента в запрос.
 func AuthInterceptor(c client) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req interface{},
 		reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {

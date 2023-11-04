@@ -18,7 +18,7 @@ import (
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
-type Repository interface {
+type repository interface {
 	HealthCheck() error
 	CreateUser(ctx context.Context, login, password string) (int64, error)
 	FindUserByLogin(ctx context.Context, login string) (*storage.User, error)
@@ -28,14 +28,17 @@ type Repository interface {
 	UpdateUserRecord(ctx context.Context, record *storage.Record) error
 }
 
+// Server – сервер приложения, который отвечает за хранение и обработку приватных данных пользователя.
 type Server struct {
 	pb.UnimplementedGophKeeperServer
-	Storage Repository
+	Storage repository
 	Config  *config.Config
 	Logger  *logger.Logger
 }
 
-func NewServer(r Repository, c *config.Config, l *logger.Logger) *Server {
+// NewServer – функция инициализации сервера.
+// Функция принимает репозиторий, конфигуратор и логгер.
+func NewServer(r repository, c *config.Config, l *logger.Logger) *Server {
 	return &Server{
 		Storage: r,
 		Config:  c,
@@ -43,6 +46,7 @@ func NewServer(r Repository, c *config.Config, l *logger.Logger) *Server {
 	}
 }
 
+// Start – метод для запуска сервера приложения.
 func (s *Server) Start() error {
 	listen, err := net.Listen("tcp", s.Config.Host)
 	if err != nil {

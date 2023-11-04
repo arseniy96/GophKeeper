@@ -13,6 +13,7 @@ import (
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
+// SignUp – метод регистрации пользователя на сервере.
 func (s *Server) SignUp(ctx context.Context, in *pb.SignUpRequest) (*pb.SignUpResponse, error) {
 	login := in.Login
 	pass := in.Password
@@ -43,6 +44,7 @@ func (s *Server) SignUp(ctx context.Context, in *pb.SignUpRequest) (*pb.SignUpRe
 	}, nil
 }
 
+// SignIn – метод аутентификации на сервере.
 func (s *Server) SignIn(ctx context.Context, in *pb.SignInRequest) (*pb.SignInResponse, error) {
 	login := in.Login
 	pass := in.Password

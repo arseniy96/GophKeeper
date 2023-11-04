@@ -8,6 +8,7 @@ import (
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
+// GetUserData – метод получения данных пользователя с сервера.
 func (c *Client) GetUserData(model models.UserDataModel) (*models.UserData, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()

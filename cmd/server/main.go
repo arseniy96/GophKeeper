@@ -9,6 +9,12 @@ import (
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
+// @Title GophKeeper Server.
+// @Description Сервер для хранения приватных данных, таких, как пароли, карточные данные или файлы.
+// @Version 1.0.
+// @Contact.email arsenzhar@yandex.ru.
+// @Host localhost:3200.
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)

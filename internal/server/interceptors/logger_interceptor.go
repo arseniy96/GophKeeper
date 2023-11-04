@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// LoggerInterceptor – интерсептор сервера для логгирования запросов.
 func LoggerInterceptor() logging.Logger {
 	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
 		l := zap.NewExample()

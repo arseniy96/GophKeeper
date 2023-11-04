@@ -18,15 +18,16 @@ import (
 )
 
 const (
-	TimeOut        = 3 * time.Second
-	DefaultVersion = 1
+	TimeOut = 3 * time.Second
 )
 
+// Database – структура хранилища.
 type Database struct {
 	DB *pgx.Conn
 	l  *logger.Logger
 }
 
+// NewStorage – функция инициализации хранилища.
 func NewStorage(dsn string, l *logger.Logger) (*Database, error) {
 	if err := runMigrations(dsn); err != nil {
 		return nil, fmt.Errorf("%w: Init storage error: %w", ErrMigrationsFailed, err)
@@ -60,6 +61,7 @@ func runMigrations(dsn string) error {
 	return nil
 }
 
+// HealthCheck – метод для проверки подключения к БД.
 func (db *Database) HealthCheck() error {
 	ctx, cancel := context.WithTimeout(context.Background(), TimeOut)
 	defer cancel()
@@ -67,6 +69,7 @@ func (db *Database) HealthCheck() error {
 	return db.DB.Ping(ctx)
 }
 
+// Close – метод для закрытия подключения к БД.
 func (db *Database) Close() error {
 	ctx, cancel := context.WithTimeout(context.Background(), TimeOut)
 	defer cancel()
@@ -74,6 +77,7 @@ func (db *Database) Close() error {
 	return db.DB.Close(ctx)
 }
 
+// CreateUser – метод сохранения пользователя в БД.
 func (db *Database) CreateUser(ctx context.Context, login, password string) (int64, error) {
 	var pgErr *pgconn.PgError
 	var id int64
@@ -90,6 +94,7 @@ func (db *Database) CreateUser(ctx context.Context, login, password string) (int
 	return id, nil
 }
 
+// FindUserByLogin – метод поиска пользователя по логину.
 func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, error) {
 	var u User
 	err := db.DB.QueryRow(ctx,
@@ -106,6 +111,7 @@ func (db *Database) FindUserByLogin(ctx context.Context, login string) (*User, e
 	return &u, nil
 }
 
+// SaveUserData – метод сохранения данных пользователя.
 func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataType string, data []byte) error {
 	var pgErr *pgconn.PgError
 
@@ -123,6 +129,7 @@ func (db *Database) SaveUserData(ctx context.Context, userID int64, name, dataTy
 	return nil
 }
 
+// GetUserData – метод получения всех сохранённых мета-данных пользователя.
 func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecord, error) {
 	rows, err := db.DB.Query(ctx,
 		`SELECT id, name, data_type, version from user_records where user_id=$1`,
@@ -149,6 +156,7 @@ func (db *Database) GetUserData(ctx context.Context, userID int64) ([]ShortRecor
 	return records, nil
 }
 
+// FindUserRecord – метод поиска данных пользователя по id.
 func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Record, error) {
 	var rec Record
 	err := db.DB.QueryRow(ctx,
@@ -165,6 +173,7 @@ func (db *Database) FindUserRecord(ctx context.Context, id, userID int64) (*Reco
 	return &rec, nil
 }
 
+// UpdateUserRecord – метод обновления данных пользователя.
 func (db *Database) UpdateUserRecord(ctx context.Context, rec *Record) error {
 	_, err := db.DB.Exec(ctx, `UPDATE user_records SET data=$1, version=version+1 WHERE id=$2`, rec.Data, rec.ID)
 	if err != nil {

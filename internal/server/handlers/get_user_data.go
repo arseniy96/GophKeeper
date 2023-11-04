@@ -13,6 +13,7 @@ import (
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
+// GetUserData – метод получения сохранённых данных пользователя.
 func (s *Server) GetUserData(ctx context.Context, in *pb.UserDataRequest) (*pb.UserDataResponse, error) {
 	userID := ctx.Value(src.UserIDContextKey).(int64)
 
