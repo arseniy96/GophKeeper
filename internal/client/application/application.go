@@ -31,11 +31,12 @@ type clientCache interface {
 
 // Client – структура, которая служит для работы с сервером. Отвечает за сценарий приложения.
 type Client struct {
-	gRPCClient grpcClient
-	printer    printer
-	cache      clientCache
-	Config     *config.Config
-	Logger     *logger.Logger
+	gRPCClient   grpcClient
+	printer      printer
+	cache        clientCache
+	Config       *config.Config
+	Logger       *logger.Logger
+	dataSyncChan chan int64
 }
 
 // NewClient – функция для инициализации клиента.
@@ -46,12 +47,18 @@ func NewClient(l *logger.Logger, c *config.Config) (*Client, error) {
 		return nil, err
 	}
 	cache := clientcache.NewCache()
+	dataSyncChan := make(chan int64, c.ChanSize)
 
-	return &Client{
-		gRPCClient: gRPCClient,
-		printer:    &utils.Printer{},
-		cache:      cache,
-		Config:     c,
-		Logger:     l,
-	}, nil
+	client := &Client{
+		gRPCClient:   gRPCClient,
+		printer:      &utils.Printer{},
+		cache:        cache,
+		dataSyncChan: dataSyncChan,
+		Config:       c,
+		Logger:       l,
+	}
+
+	go client.StartWorker()
+
+	return client, nil
 }

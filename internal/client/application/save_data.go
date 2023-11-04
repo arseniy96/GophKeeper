@@ -49,7 +49,7 @@ func (c *Client) SaveData() error {
 	if err != nil {
 		return err
 	}
-	c.cache.Append(model)
+	c.UpdateDataInCache(model)
 
 	c.printer.Print("Saved!")
 

@@ -37,7 +37,7 @@ func (c *Client) GetUserData() error {
 	}
 
 	m := models.UserDataModel{ID: dataID}
-	data, err = c.cache.GetUserData(m) // сначала пытаемся достать из кеша
+	data, err = c.GetDataFromCache(m) // сначала пытаемся достать из кеша
 	if err != nil {
 		c.Logger.Log.Warnf("get data from cache error: %w", err)
 		data, err = c.gRPCClient.GetUserData(m) // если в кеше нет, идём на сервер

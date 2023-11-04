@@ -15,6 +15,8 @@ type Config struct {
 	LogLevel string `json:"log_level" env:"LOG_LEVEL"`
 	// ConnectionTimeout – таймаут запроса к серверу.
 	ConnectionTimeout int64 `json:"connection_timeout" env:"CONNECTION_TIMEOUT"`
+	// ChanSize – размер канала для синхронизации данных.
+	ChanSize int64 `json:"chan_size" env:"CHAN_SIZE"`
 }
 
 // Initialize – функция инициализации конфига.

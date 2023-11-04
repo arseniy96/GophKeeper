@@ -9,7 +9,9 @@ func (c *Client) GetUserDataList() error {
 	records, err := c.gRPCClient.GetUserDataList()
 	if err != nil { // что-то с сервером
 		c.Logger.Log.Warnf("get user data list error: %v", err)
-		records = c.cache.GetUserDataList() // пытаемся достать из кеша
+		records = c.GetDataListFromCache() // пытаемся достать из кеша
+	} else {
+		c.SyncCache(records)
 	}
 	if len(records) == 0 {
 		return ErrNoData
