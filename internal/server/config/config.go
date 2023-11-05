@@ -21,8 +21,8 @@ type Config struct {
 }
 
 // Initialize – функция инициализации конфига.
-func Initialize() (*Config, error) {
-	configFile, err := os.Open("./config/server/settings/production.json")
+func Initialize(configPath string) (*Config, error) {
+	configFile, err := os.Open(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("open file error: %w", err)
 	}

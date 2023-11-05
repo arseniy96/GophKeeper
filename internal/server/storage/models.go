@@ -6,8 +6,6 @@ type User struct {
 	Login string
 	// Password – пароль.
 	Password string
-	// Token – токен аутентификации.
-	Token string
 	// ID – идентификатор пользователя.
 	ID int64
 }

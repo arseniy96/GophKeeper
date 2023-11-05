@@ -8,6 +8,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type MyCrypt struct{}
+
 type Claims struct {
 	jwt.RegisteredClaims
 	UserID int64
@@ -17,7 +19,7 @@ var (
 	ErrInvalidToken = errors.New("invalid token")
 )
 
-func HashFunc(src string) (string, error) {
+func (c *MyCrypt) HashFunc(src string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(src), bcrypt.DefaultCost)
 	if err != nil {
 		return "", fmt.Errorf("bcrypt error: %w", err)
@@ -26,11 +28,11 @@ func HashFunc(src string) (string, error) {
 	return string(hash), nil
 }
 
-func CompareHash(src, hash string) error {
+func (c *MyCrypt) CompareHash(src, hash string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(src))
 }
 
-func BuildJWT(userID int64, secret string) (string, error) {
+func (c *MyCrypt) BuildJWT(userID int64, secret string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{},
 		UserID:           userID,
@@ -39,7 +41,7 @@ func BuildJWT(userID int64, secret string) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
-func GetUserID(tokenString, secret string) (int64, error) {
+func (c *MyCrypt) GetUserID(tokenString, secret string) (int64, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims,
 		func(t *jwt.Token) (interface{}, error) {

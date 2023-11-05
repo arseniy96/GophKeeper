@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/arseniy96/GophKeeper/internal/server/storage"
-	"github.com/arseniy96/GophKeeper/internal/services/mycrypto"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 )
 
@@ -17,7 +16,7 @@ import (
 func (s *Server) SignUp(ctx context.Context, in *pb.SignUpRequest) (*pb.SignUpResponse, error) {
 	login := in.Login
 	pass := in.Password
-	encryptedPass, err := mycrypto.HashFunc(pass)
+	encryptedPass, err := s.crypto.HashFunc(pass)
 	if err != nil {
 		s.Logger.Log.Error(err)
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
@@ -33,7 +32,7 @@ func (s *Server) SignUp(ctx context.Context, in *pb.SignUpRequest) (*pb.SignUpRe
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
 
-	authToken, err := mycrypto.BuildJWT(userID, s.Config.SecretKey)
+	authToken, err := s.crypto.BuildJWT(userID, s.Config.SecretKey)
 	if err != nil {
 		s.Logger.Log.Errorf("update user token error: %v", err) //nolint:goconst,nolintlint // it's format
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
@@ -58,12 +57,12 @@ func (s *Server) SignIn(ctx context.Context, in *pb.SignInRequest) (*pb.SignInRe
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if err := mycrypto.CompareHash(pass, user.Password); err != nil {
+	if err := s.crypto.CompareHash(pass, user.Password); err != nil {
 		s.Logger.Log.Debugf("authorization failed, login: %v", login)
 		return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusUnauthorized))
 	}
 
-	authToken, err := mycrypto.BuildJWT(user.ID, s.Config.SecretKey)
+	authToken, err := s.crypto.BuildJWT(user.ID, s.Config.SecretKey)
 	if err != nil {
 		s.Logger.Log.Errorf("update user token error: %v", err) //nolint:goconst,nolintlint // it's format
 		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))

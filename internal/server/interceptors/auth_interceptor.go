@@ -9,14 +9,17 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"github.com/arseniy96/GophKeeper/internal/services/mycrypto"
 	"github.com/arseniy96/GophKeeper/src"
 	"github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
+type crypt interface {
+	GetUserID(string, string) (int64, error)
+}
+
 // AuthInterceptor – интерсептор сервера для проверки авторизации пользователя.
-func AuthInterceptor(l *logger.Logger, secret string) grpc.UnaryServerInterceptor {
+func AuthInterceptor(l *logger.Logger, secret string, cr crypt) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, r interface{}, i *grpc.UnaryServerInfo, h grpc.UnaryHandler) (interface{}, error) {
 		if i.FullMethod == gophkeeper.GophKeeper_SignUp_FullMethodName ||
 			i.FullMethod == gophkeeper.GophKeeper_SignIn_FullMethodName ||
@@ -35,7 +38,7 @@ func AuthInterceptor(l *logger.Logger, secret string) grpc.UnaryServerIntercepto
 			return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusForbidden))
 		}
 
-		userID, err := mycrypto.GetUserID(token, secret)
+		userID, err := cr.GetUserID(token, secret)
 		if err != nil {
 			l.Log.Debugf("invalid token: %v", token)
 			return nil, status.Error(codes.Unauthenticated, http.StatusText(http.StatusForbidden))

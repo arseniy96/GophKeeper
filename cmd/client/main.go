@@ -13,6 +13,10 @@ import (
 // @Version 1.0.
 // @Contact.email arsenzhar@yandex.ru.
 
+const (
+	configPath = "./config/client/settings/production.json"
+)
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)
@@ -20,7 +24,7 @@ func main() {
 }
 
 func run() error {
-	settings, err := config.Initialize()
+	settings, err := config.Initialize(configPath)
 	if err != nil {
 		return err
 	}

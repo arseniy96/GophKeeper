@@ -14,6 +14,7 @@ import (
 	"github.com/arseniy96/GophKeeper/internal/server/config"
 	"github.com/arseniy96/GophKeeper/internal/server/interceptors"
 	"github.com/arseniy96/GophKeeper/internal/server/storage"
+	"github.com/arseniy96/GophKeeper/internal/services/mycrypto"
 	pb "github.com/arseniy96/GophKeeper/src/grpc/gophkeeper"
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
@@ -28,10 +29,18 @@ type repository interface {
 	UpdateUserRecord(ctx context.Context, record *storage.Record) error
 }
 
+type crypt interface {
+	HashFunc(src string) (string, error)
+	CompareHash(src, hash string) error
+	BuildJWT(userID int64, secret string) (string, error)
+	GetUserID(tokenString, secret string) (int64, error)
+}
+
 // Server – сервер приложения, который отвечает за хранение и обработку приватных данных пользователя.
 type Server struct {
 	pb.UnimplementedGophKeeperServer
 	Storage repository
+	crypto  crypt
 	Config  *config.Config
 	Logger  *logger.Logger
 }
@@ -43,6 +52,7 @@ func NewServer(r repository, c *config.Config, l *logger.Logger) *Server {
 		Storage: r,
 		Config:  c,
 		Logger:  l,
+		crypto:  &mycrypto.MyCrypt{},
 	}
 }
 
@@ -55,7 +65,7 @@ func (s *Server) Start() error {
 	}
 
 	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		interceptors.AuthInterceptor(s.Logger, s.Config.SecretKey),
+		interceptors.AuthInterceptor(s.Logger, s.Config.SecretKey, s.crypto),
 		logging.UnaryServerInterceptor(interceptors.LoggerInterceptor()),
 	))
 
