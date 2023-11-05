@@ -120,3 +120,14 @@ LOG_LEVEL - уровень логирования
 5. Стопнуть сервер
 6. Попробовать запросить какие-либо данные через клиент
 7. Клиент должен достать данные из кеша
+
+
+# Тестирование
+
+Для запуска тестов и определения покрытия тестами необходимо выполнить:
+
+```
+go test ./... -coverprofile profile.cov.tmp --tags=integration
+cat profile.cov.tmp | grep -v 'easyjson.go' > profile.cov
+go tool cover -func profile.cov
+```

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -46,12 +48,20 @@ func NewStorage(dsn string, l *logger.Logger) (*Database, error) {
 	return database, nil
 }
 
+//go:embed db/migrations/*.sql
+var fs embed.FS
+
 func runMigrations(dsn string) error {
 	const migrationsPath = "db/migrations"
-	m, err := migrate.New(fmt.Sprintf("file://%s", migrationsPath), dsn)
+	d, err := iofs.New(fs, migrationsPath)
 	if err != nil {
 		return fmt.Errorf("failed to get a new migrate instance: %w", err)
 	}
+	m, err := migrate.NewWithSourceInstance("iofs", d, dsn)
+	if err != nil {
+		return fmt.Errorf("failed to get a new migrate instance: %w", err)
+	}
+
 	if err := m.Up(); err != nil {
 		if !errors.Is(err, migrate.ErrNoChange) {
 			return fmt.Errorf("failed to apply migrations: %w", err)
