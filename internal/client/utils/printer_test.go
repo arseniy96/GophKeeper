@@ -21,12 +21,12 @@ func TestPrinter_Scan(t *testing.T) {
 	//nolint:reassign //it's for testing
 	os.Stdin = r
 
-	input := "123\n" // Данные, которые будут считаны функцией Scan
+	input := "123\n"
 	_, err = w.WriteString(input)
 	if err != nil {
 		t.Fatalf("Error writing to pipe: %v", err)
 	}
-	_ = w.Close() // Закрываем запись, чтобы Scanln мог прочитать EOF
+	_ = w.Close()
 
 	p := Printer{}
 	var i int
