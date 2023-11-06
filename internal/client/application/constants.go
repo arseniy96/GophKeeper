@@ -23,3 +23,5 @@ const (
 	saveUserData
 	editUserData
 )
+
+const InternalErrTemplate = "%w: something went wrong: %w"

@@ -33,7 +33,7 @@ func (c *Client) GetUserData() error {
 	)
 	_, err = c.printer.Scan(&dataID)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	m := models.UserDataModel{ID: dataID}
@@ -63,45 +63,45 @@ func printData(data *models.UserData) error {
 		passStruct := &PasswordData{}
 		err := easyjson.Unmarshal(data.Data, passStruct)
 		if err != nil {
-			return fmt.Errorf("easyjson unmarshal error: %w", err)
+			return fmt.Errorf("easyjson unmarshal error for struct PasswordData: %w", err)
 		}
 		//nolint:goconst,nolintlint // it's format
 		pretty, err = json.MarshalIndent(passStruct, "", "  ")
 		if err != nil {
-			return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+			return fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 		}
 	case cardDataType:
 		cardStruct := &CardData{}
 		err := easyjson.Unmarshal(data.Data, cardStruct)
 		if err != nil {
-			return fmt.Errorf("easyjson unmarshal error: %w", err)
+			return fmt.Errorf("easyjson unmarshal error for struct CardData: %w", err)
 		}
 		//nolint:goconst,nolintlint // it's format
 		pretty, err = json.MarshalIndent(cardStruct, "", "  ")
 		if err != nil {
-			return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+			return fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 		}
 	case fileDataType:
 		fileStruct := &FileData{}
 		err := easyjson.Unmarshal(data.Data, fileStruct)
 		if err != nil {
-			return fmt.Errorf("easyjson unmarshal error: %w", err)
+			return fmt.Errorf("easyjson unmarshal error for struct FileData: %w", err)
 		}
 		//nolint:goconst,nolintlint // it's format
 		pretty, err = json.MarshalIndent(fileStruct, "", "  ")
 		if err != nil {
-			return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+			return fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 		}
 	case textDataType:
 		textStruct := &TextData{}
 		err := easyjson.Unmarshal(data.Data, textStruct)
 		if err != nil {
-			return fmt.Errorf("easyjson unmarshal error: %w", err)
+			return fmt.Errorf("easyjson unmarshal error for struct TextData: %w", err)
 		}
 		//nolint:goconst,nolintlint // it's format
 		pretty, err = json.MarshalIndent(textStruct, "", "  ")
 		if err != nil {
-			return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+			return fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 		}
 	default:
 		return nil

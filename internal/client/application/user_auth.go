@@ -12,41 +12,29 @@ func (c *Client) UserAuth() error {
 	c.printer.Print("Do you have an account? (y/n)")
 	_, err := c.printer.Scan(&ans)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	switch ans {
 	case "y":
-		return c.userSignIn()
+		authM, err := buildAuthData(c.printer)
+		if err != nil {
+			return err
+		}
+		return c.userSignIn(*authM)
 	case "n":
-		return c.userSignUp()
+		authM, err := buildAuthData(c.printer)
+		if err != nil {
+			return err
+		}
+		return c.userSignUp(*authM)
 	default:
 		return c.UserAuth()
 	}
 }
 
-func (c *Client) userSignIn() error {
-	var (
-		login, password string
-		err             error
-	)
-
-	c.printer.Print("Please enter your login and password.")
-	fmt.Print(loginInput)
-	_, err = c.printer.Scan(&login)
-	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
-	}
-	fmt.Print(passwordInput)
-	_, err = c.printer.Scan(&password)
-	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
-	}
-
-	_, err = c.gRPCClient.SignIn(models.AuthModel{
-		Login:    login,
-		Password: password,
-	})
+func (c *Client) userSignIn(authM models.AuthModel) error {
+	_, err := c.gRPCClient.SignIn(authM)
 	if err != nil {
 		return fmt.Errorf("%w: SignIn error: %w", ErrUserNotAuthorized, err)
 	}
@@ -54,31 +42,35 @@ func (c *Client) userSignIn() error {
 	return nil
 }
 
-func (c *Client) userSignUp() error {
-	var (
-		login, password string
-		err             error
-	)
-
-	c.printer.Print("Please enter login and password.")
-	fmt.Print(loginInput)
-	_, err = c.printer.Scan(&login)
-	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
-	}
-	fmt.Print(passwordInput)
-	_, err = c.printer.Scan(&password)
-	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
-	}
-
-	_, err = c.gRPCClient.SignUp(models.AuthModel{
-		Login:    login,
-		Password: password,
-	})
+func (c *Client) userSignUp(authM models.AuthModel) error {
+	_, err := c.gRPCClient.SignUp(authM)
 	if err != nil {
 		return fmt.Errorf("%w: SignUp error: %w", ErrUserNotAuthorized, err)
 	}
 
 	return nil
+}
+
+func buildAuthData(p printer) (*models.AuthModel, error) {
+	var (
+		login, password string
+		err             error
+	)
+
+	p.Print("Please enter your login and password.")
+	fmt.Print(loginInput)
+	_, err = p.Scan(&login)
+	if err != nil {
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
+	}
+	fmt.Print(passwordInput)
+	_, err = p.Scan(&password)
+	if err != nil {
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
+	}
+
+	return &models.AuthModel{
+		Login:    login,
+		Password: password,
+	}, nil
 }

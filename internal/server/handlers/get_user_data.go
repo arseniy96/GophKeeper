@@ -15,7 +15,11 @@ import (
 
 // GetUserData – метод получения сохранённых данных пользователя.
 func (s *Server) GetUserData(ctx context.Context, in *pb.UserDataRequest) (*pb.UserDataResponse, error) {
-	userID := ctx.Value(src.UserIDContextKey).(int64)
+	userID, ok := ctx.Value(src.UserIDContextKey).(int64)
+	if !ok {
+		s.Logger.Log.Error(missingKeyErrText)
+		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
+	}
 
 	record, err := s.Storage.FindUserRecord(ctx, in.Id, userID)
 	if err != nil {

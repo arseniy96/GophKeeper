@@ -19,6 +19,10 @@ import (
 	"github.com/arseniy96/GophKeeper/src/logger"
 )
 
+const (
+	missingKeyErrText = "missing key in context"
+)
+
 type repository interface {
 	HealthCheck() error
 	CreateUser(ctx context.Context, login, password string) (int64, error)

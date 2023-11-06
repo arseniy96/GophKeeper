@@ -17,8 +17,10 @@ func TestServer_SaveData(t *testing.T) {
 
 	mockDB = mock_storage.NewMockrepository(ctrl)
 	srv.Storage = mockDB
-	mockDB.EXPECT().SaveUserData(gomock.Any(), gomock.Any(), "error", gomock.Any(), gomock.Any()).Return(storage.ErrSaveUserData).AnyTimes()
-	mockDB.EXPECT().SaveUserData(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockDB.EXPECT().SaveUserData(gomock.Any(), gomock.Any(), "error", gomock.Any(), gomock.Any()).Return(
+		storage.ErrSaveUserData).AnyTimes()
+	mockDB.EXPECT().SaveUserData(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(
+		nil).AnyTimes()
 
 	type args struct {
 		in *pb.SaveDataRequest

@@ -55,7 +55,7 @@ func runMigrations(dsn string) error {
 	const migrationsPath = "db/migrations"
 	d, err := iofs.New(fs, migrationsPath)
 	if err != nil {
-		return fmt.Errorf("failed to get a new migrate instance: %w", err)
+		return fmt.Errorf("failed to create byte file of migrations: %w", err)
 	}
 	m, err := migrate.NewWithSourceInstance("iofs", d, dsn)
 	if err != nil {

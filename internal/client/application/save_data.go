@@ -30,18 +30,18 @@ func (c *Client) SaveData() error {
 	}
 	_, err := c.printer.Scan(&dti)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	model, err := buildData(dti, c.printer)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	c.printer.Print("What name to save the data with?")
 	_, err = c.printer.Scan(&name)
 	if err != nil {
-		return fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 	model.Name = name
 
@@ -71,28 +71,29 @@ func buildData(dti int, p printer) (*models.UserData, error) {
 	}
 }
 
+//nolint:dupl // it's builder
 func buildPassword(p printer) (*models.UserData, error) {
 	p.Print("Please enter password data")
 	pass := &PasswordData{}
 	fmt.Print(siteInput)
 	_, err := p.Scan(&pass.Site)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 	fmt.Print(loginInput)
 	_, err = p.Scan(&pass.Login)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 	fmt.Print(passwordInput)
 	_, err = p.Scan(&pass.Password)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	byteData, err := easyjson.Marshal(pass)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	return &models.UserData{
@@ -101,28 +102,29 @@ func buildPassword(p printer) (*models.UserData, error) {
 	}, nil
 }
 
+//nolint:dupl // it's builder
 func buildCardData(p printer) (*models.UserData, error) {
 	p.Print("Please enter card details")
 	card := &CardData{}
 	fmt.Print(cardNumberInput)
 	_, err := p.Scan(&card.Number)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 	fmt.Print(cardExpDateInput)
 	_, err = p.Scan(&card.ExpDate)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 	fmt.Print(cardHolderInput)
 	_, err = p.Scan(&card.CardHolder)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	byteData, err := easyjson.Marshal(card)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	return &models.UserData{
@@ -136,12 +138,12 @@ func buildTextData(p printer) (*models.UserData, error) {
 	p.Print("Please enter text")
 	_, err := p.Scan(&text.Text)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	byteData, err := easyjson.Marshal(text)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	return &models.UserData{
@@ -155,11 +157,11 @@ func buildFileData(p printer) (*models.UserData, error) {
 	p.Print("Please enter path to file")
 	_, err := p.Scan(&file.Path)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 	openedFile, err := os.Open(file.Path)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 	defer func() {
 		_ = openedFile.Close()
@@ -167,19 +169,19 @@ func buildFileData(p printer) (*models.UserData, error) {
 
 	stat, err := openedFile.Stat()
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	bs := make([]byte, stat.Size())
 	_, err = bufio.NewReader(openedFile).Read(bs)
 	if err != nil && errors.Is(err, io.EOF) {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 	file.Data = bs
 
 	byteData, err := easyjson.Marshal(file)
 	if err != nil {
-		return nil, fmt.Errorf("%w: something went wrong: %w", ErrInternal, err)
+		return nil, fmt.Errorf(InternalErrTemplate, ErrInternal, err)
 	}
 
 	return &models.UserData{

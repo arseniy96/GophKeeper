@@ -13,7 +13,11 @@ import (
 
 // GetUserDataList – метод получения всех сохранённых мета-данных пользователя.
 func (s *Server) GetUserDataList(ctx context.Context, in *pb.UserDataListRequest) (*pb.UserDataListResponse, error) {
-	userID := ctx.Value(src.UserIDContextKey).(int64)
+	userID, ok := ctx.Value(src.UserIDContextKey).(int64)
+	if !ok {
+		s.Logger.Log.Error(missingKeyErrText)
+		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
+	}
 
 	userRecords, err := s.Storage.GetUserData(ctx, userID)
 	if err != nil {

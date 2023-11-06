@@ -15,7 +15,11 @@ import (
 
 // UpdateUserData – метод обновления данных пользователя.
 func (s *Server) UpdateUserData(ctx context.Context, in *pb.UpdateUserDataRequest) (*pb.UpdateUserDataResponse, error) {
-	userID := ctx.Value(src.UserIDContextKey).(int64)
+	userID, ok := ctx.Value(src.UserIDContextKey).(int64)
+	if !ok {
+		s.Logger.Log.Error(missingKeyErrText)
+		return nil, status.Error(codes.Internal, http.StatusText(http.StatusInternalServerError))
+	}
 
 	record, err := s.Storage.FindUserRecord(ctx, in.Id, userID)
 	if err != nil {
