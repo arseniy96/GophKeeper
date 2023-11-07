@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  gophkeeper-server:
+    build: ./
+    command: ./bin/gophkeeper-server
+    ports:
+      - 3200:3200
+    depends_on:
+      - db
+    environment:
+      - DATABASE_DSN=postgres://postgres:ps@db:5432/postgres?sslmode=disable
+      - HOST=:3200
+
+  db:
+    restart: always
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=ps
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    ports:
+      - 5436:5432

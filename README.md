@@ -23,6 +23,31 @@ Password manager
 
 ## Запуск сервера
 
+### Запуск через докер
+
+Сервер можно запустить в докере вместе с базой данных.
+Для этого необходимо запустить docker-compose командой:
+
+```
+docker-compose up --build gophkeeper-server
+```
+
+### Prepare
+
+Для того, чтобы запустить сервер, необходимо настроить СУБД.
+
+В приложении используется PostgreSQL, как установить, можно почитать тут – https://www.postgresql.org/download/
+
+Далее необходимо создать пользователя и БД. Для этого необходимо в клиенте СУБД выполнить:
+
+```
+CREATE DATABASE goph_keeper;
+CREATE USER gopher;
+grant all privileges on database goph_keeper to gopher;
+```
+
+Далее при запуске сервера выполнятся необходимые миграции для инициализации БД.
+
 Чтобы запустить сервер, необходимо выполнить команду
 
 ```
@@ -130,4 +155,22 @@ LOG_LEVEL - уровень логирования
 go test ./... -coverprofile profile.cov.tmp --tags=integration
 cat profile.cov.tmp | grep -v 'easyjson.go' > profile.cov
 go tool cover -func profile.cov
+```
+
+# Документация
+
+Для запуска доксервера необходимо выполнить следующую команду
+
+```
+godoc -http:8080
+```
+
+И открыть в браузере `http://localhost:8080/pkg/?m=all`
+
+# Linter
+
+Для запуска линтера надо выполнить команду
+
+```
+make golangci-lint-run
 ```
