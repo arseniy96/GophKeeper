@@ -2,18 +2,18 @@ package clientcache
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/arseniy96/GophKeeper/internal/client/models"
 )
 
 // Cache – объект кеша.
 type Cache struct {
-	mem map[int64]cacheData
+	mem *sync.Map
 }
 
 type cacheData struct {
-	data   *models.UserData
-	dataID int64
+	data *models.UserData
 }
 
 var (
@@ -23,40 +23,39 @@ var (
 // NewCache – функция инициализации кеша.
 func NewCache() *Cache {
 	return &Cache{
-		mem: make(map[int64]cacheData),
+		mem: &sync.Map{},
 	}
 }
 
 // Append – метод добавления данных в кеш.
 func (c *Cache) Append(model *models.UserData) {
-	c.mem[model.ID] = cacheData{
-		dataID: model.ID,
-		data:   model,
-	}
+	c.mem.Store(model.ID, model)
 }
 
 // GetUserData – метод получения данных из кеша.
 func (c *Cache) GetUserData(model models.UserDataModel) (*models.UserData, error) {
-	d, ok := c.mem[model.ID]
+	d, ok := c.mem.Load(model.ID)
 	if !ok {
 		return nil, ErrNotFound
 	}
 
-	return d.data, nil
+	return d.(*models.UserData), nil
 }
 
 // GetUserDataList – метод получения всех сохранённых данных (мета-данных) пользователя из кеша.
 func (c *Cache) GetUserDataList() []models.UserDataList {
-	records := make([]models.UserDataList, 0, len(c.mem))
-	for _, d := range c.mem {
+	records := make([]models.UserDataList, 0)
+	c.mem.Range(func(k, v interface{}) bool {
 		rec := models.UserDataList{
-			Name:     d.data.Name,
-			DataType: d.data.DataType,
-			ID:       d.data.ID,
-			Version:  d.data.Version,
+			Name:     v.(*models.UserData).Name,
+			DataType: v.(*models.UserData).DataType,
+			ID:       k.(int64),
+			Version:  v.(*models.UserData).Version,
 		}
 		records = append(records, rec)
-	}
+
+		return true
+	})
 
 	return records
 }
