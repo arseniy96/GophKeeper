@@ -12,10 +12,6 @@ type Cache struct {
 	mem *sync.Map
 }
 
-type cacheData struct {
-	data *models.UserData
-}
-
 var (
 	ErrNotFound = errors.New(`not found in cache`)
 )

@@ -36,22 +36,17 @@ docker-compose up --build gophkeeper-server
 
 Для того, чтобы запустить сервер, необходимо настроить СУБД.
 
-В приложении используется PostgreSQL, как установить, можно почитать тут – https://www.postgresql.org/download/
-
-Далее необходимо создать пользователя и БД. Для этого необходимо в клиенте СУБД выполнить:
+В приложении используется PostgreSQL, поэтому его можно запустить в докере, используя Makefile:
 
 ```
-CREATE DATABASE goph_keeper;
-CREATE USER gopher;
-grant all privileges on database goph_keeper to gopher;
+make pg_docker_build
+make pg_docker_run
 ```
 
-Далее при запуске сервера выполнятся необходимые миграции для инициализации БД.
-
-Чтобы запустить сервер, необходимо выполнить команду
+Чтобы запустить сервер, используя в качестве БД запущенный контейнер, необходимо выполнить команду
 
 ```
-go run ./cmd/server/main.go
+DATABASE_DSN=postgres://gopher:ps@localhost:5433/goph_keeper?sslmode=disable go run ./cmd/server/main.go
 ```
 
 Приложение запускается со следующими переменными окружения:

@@ -2,6 +2,7 @@ package clientcache
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/arseniy96/GophKeeper/internal/client/models"
@@ -15,7 +16,7 @@ var testData = &models.UserData{
 
 func TestCache_Append(t *testing.T) {
 	type fields struct {
-		mem map[int64]cacheData
+		mem *sync.Map
 	}
 	type args struct {
 		model *models.UserData
@@ -27,7 +28,7 @@ func TestCache_Append(t *testing.T) {
 	}{
 		{
 			name:   "success",
-			fields: fields{mem: make(map[int64]cacheData)},
+			fields: fields{mem: &sync.Map{}},
 			args: args{model: &models.UserData{
 				Name:     "testNam",
 				DataType: "password",
@@ -43,7 +44,12 @@ func TestCache_Append(t *testing.T) {
 				mem: tt.fields.mem,
 			}
 			c.Append(tt.args.model)
-			if len(c.mem) != 1 {
+			count := 0
+			c.mem.Range(func(k, v interface{}) bool {
+				count++
+				return true
+			})
+			if count != 1 {
 				t.Errorf("Cache Append error")
 			}
 		})
@@ -52,7 +58,7 @@ func TestCache_Append(t *testing.T) {
 
 func TestCache_GetUserData(t *testing.T) {
 	type fields struct {
-		mem map[int64]cacheData
+		mem *sync.Map
 	}
 	type args struct {
 		model models.UserDataModel
@@ -67,7 +73,7 @@ func TestCache_GetUserData(t *testing.T) {
 		{
 			name: "success",
 			fields: fields{
-				mem: make(map[int64]cacheData),
+				mem: &sync.Map{},
 			},
 			args: args{
 				model: models.UserDataModel{ID: 1},
@@ -82,7 +88,7 @@ func TestCache_GetUserData(t *testing.T) {
 		{
 			name: "error",
 			fields: fields{
-				mem: make(map[int64]cacheData),
+				mem: &sync.Map{},
 			},
 			args: args{
 				model: models.UserDataModel{ID: 2},
@@ -111,7 +117,7 @@ func TestCache_GetUserData(t *testing.T) {
 
 func TestCache_GetUserDataList(t *testing.T) {
 	type fields struct {
-		mem map[int64]cacheData
+		mem *sync.Map
 	}
 	tests := []struct {
 		name   string
@@ -121,14 +127,14 @@ func TestCache_GetUserDataList(t *testing.T) {
 		{
 			name: "empty",
 			fields: fields{
-				mem: make(map[int64]cacheData),
+				mem: &sync.Map{},
 			},
 			want: []models.UserDataList{},
 		},
 		{
 			name: "success",
 			fields: fields{
-				mem: make(map[int64]cacheData),
+				mem: &sync.Map{},
 			},
 			want: []models.UserDataList{{
 				Name:    "testData",
@@ -161,7 +167,7 @@ func TestNewCache(t *testing.T) {
 		{
 			name: "success",
 			want: &Cache{
-				mem: make(map[int64]cacheData),
+				mem: &sync.Map{},
 			},
 		},
 	}
