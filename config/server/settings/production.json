@@ -1,0 +1,7 @@
+{
+  "connection_timeout": 10,
+  "database_dsn": "postgres://gopher@localhost:5432/goph_keeper?sslmode=disable",
+  "host": "localhost:3200",
+  "log_level": "info",
+  "secret_key": "9Xa15pap24Hm"
+}
